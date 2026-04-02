@@ -7,7 +7,8 @@
 set -e
 
 USER_NAME=$(whoami)
-LAUNCHER_DIR="$HOME/.media-center"
+# Changed to a visible directory (removed the dot) for Snap compatibility
+LAUNCHER_DIR="$HOME/MediaCenter"
 LAUNCHER_HTML="$LAUNCHER_DIR/launcher.html"
 AUTOSTART_DIR="$HOME/.config/autostart"
 DESKTOP_FILE="$AUTOSTART_DIR/media-center.desktop"
@@ -97,7 +98,8 @@ unclutter -idle 3 -root &
 pkill -f chromium-browser 2>/dev/null || true
 sleep 1
 
-LAUNCHER="$HOME/.media-center/launcher.html"
+# Updated path here as well to match the visible directory
+LAUNCHER="$HOME/MediaCenter/launcher.html"
 
 # Launch Chromium in kiosk mode
 chromium-browser \
