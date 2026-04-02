@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Android TV Media Center</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg-base: #0f1014;
+    --surface: #1c1d24;
+    --surface-hover: #2a2b36;
+    --text: #ffffff;
+    --text-dim: #9aa0a6;
+    
+    /* Značkové barvy pro ambientní podsvícení */
+    --color-netflix: 229, 9, 20;
+    --color-youtube: 255, 0, 0;
+    --color-hbo: 89, 55, 203;
+    --color-oneplay: 255, 87, 34;
+    --color-spotify: 30, 215, 96;
+    --color-search: 66, 133, 244; /* Modrá pro Google vyhledávání */
+    --color-default: 154, 160, 166;
+  }
+
+  html, body {
+    height: 100vh;
+    background-color: var(--bg-base);
+    color: var(--text);
+    font-family: 'Roboto', sans-serif;
+    overflow: hidden;
+    user-select: none;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Dynamické ambientní pozadí ── */
+  .ambient-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background: radial-gradient(circle at 50% 0%, rgba(var(--active-color, var(--color-default)), 0.15), transparent 70%);
+    transition: background 0.6s ease-in-out;
+    pointer-events: none;
+  }
+
+  /* ── Hlavní layout ── */
+  .tv-shell {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 6vh 4vw;
+  }
+
+  /* ── Horní lišta ── */
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4vh;
+    padding: 0 1vw;
+  }
+
+  .greeting {
+    font-size: 2rem;
+    font-weight: 300;
+    letter-spacing: 0.05em;
+  }
+
+  .clock {
+    font-size: 2rem;
+    font-weight: 300;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── Vyhledávací pole ── */
+  .search-container {
+    padding: 0 1vw;
+    margin-bottom: 6vh;
+    width: 60%; /* Nechceme, aby to bylo přes celou šířku */
+  }
+
+  #search-form {
+    display: flex;
+    align-items: center;
+    background: var(--surface);
+    border-radius: 50px;
+    padding: 1.5vh 1.5vw;
+    transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.2s cubic-bezier(0.33, 1, 0.68, 1);
+    border: 2px solid transparent;
+  }
+
+  /* Focus stav pro vyhledávací pole (TV style) */
+  #search-form:focus-within {
+    background: var(--surface-hover);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 0 4px #ffffff;
+    transform: scale(1.02);
+  }
+
+  .search-icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 1vw;
+    color: var(--text-dim);
+    transition: color 0.3s ease;
+  }
+
+  #search-form:focus-within .search-icon {
+    color: var(--text); /* Zvýraznění ikony při focusu */
+  }
+
+  #search-input {
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 1.2rem;
+    font-family: inherit;
+    width: 100%;
+    outline: none; /* Odstranění defaultního prohlížečového rámečku */
+  }
+
+  #search-input::placeholder {
+    color: var(--text-dim);
+  }
+
+  /* ── Řádky (Carousel) ── */
+  .row-container {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .row-title {
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 3vh;
+    padding-left: 1vw;
+    opacity: 0.9;
+  }
+
+  .row {
+    display: flex;
+    gap: 1.5vw; 
+    padding: 2vw 1vw;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none; 
+    -ms-overflow-style: none;
+  }
+  
+  .row::-webkit-scrollbar { display: none; }
+
+  /* ── Dlaždice (Aplikace) ── */
+  .tile {
+    flex: 0 0 auto;
+    width: 18vw;
+    aspect-ratio: 16 / 9;
+    border-radius: 16px;
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5vh;
+    text-decoration: none;
+    color: var(--text);
+    position: relative;
+    transition: transform 0.25s cubic-bezier(0.33, 1, 0.68, 1), 
+                box-shadow 0.25s ease, 
+                background 0.25s ease;
+    outline: none;
+  }
+
+  .tile.youtube-tile {
+    background: #ffffff;
+    color: #000000;
+  }
+  
+  .tile.youtube-tile:focus, .tile.youtube-tile:hover {
+     background: #f0f0f0;
+  }
+
+  .app-logo {
+    width: 50%;
+    height: auto;
+    max-height: 50%;
+    object-fit: contain;
+    transition: transform 0.2s ease;
+  }
+
+  .app-label {
+    font-size: 1.1rem;
+    font-weight: 500;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+    text-align: center;
+  }
+  
+  .tile.youtube-tile .app-label {
+      opacity: 0.8;
+  }
+
+  /* ── Focus State pro dlaždice ── */
+  .tile:focus, .tile:hover {
+    transform: scale(1.12);
+    background: var(--surface-hover);
+    box-shadow: 0 15px 45px rgba(0,0,0,0.9), 
+                0 0 0 4px #ffffff;
+    z-index: 10;
+  }
+
+  .tile.youtube-tile:focus, .tile.youtube-tile:hover {
+    background: #ffffff; 
+  }
+
+  .tile:focus .app-label, .tile:hover .app-label {
+    opacity: 1;
+  }
+
+  .tile:focus .app-logo, .tile:hover .app-logo {
+    transform: scale(1.05);
+  }
+
+  /* ── Animace při načtení ── */
+  .search-container {
+    opacity: 0;
+    animation: fadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation-delay: 0.1s;
+  }
+
+  .row-container {
+    opacity: 0;
+    animation: fadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation-delay: 0.2s;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+</style>
+</head>
+<body>
+
+<div class="ambient-bg" id="ambient"></div>
+
+<div class="tv-shell">
+  <!-- Horní lišta -->
+  <div class="topbar">
+    <div class="greeting" id="greeting">Dobré ráno</div>
+    <div class="clock" id="clock">00:00</div>
+  </div>
+
+  <!-- Vyhledávací pole -->
+  <div class="search-container">
+    <form id="search-form" action="https://www.google.com/search" method="GET">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input type="text" name="q" id="search-input" placeholder="Vyhledat na webu..." autocomplete="off" tabindex="0">
+    </form>
+  </div>
+
+  <!-- Řádek s aplikacemi -->
+  <div class="row-container">
+    <div class="row-title">Nainstalované aplikace</div>
+    <div class="row" id="row-apps">
+      
+      <a class="tile" href="https://www.netflix.com" data-brand="netflix" tabindex="0">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg" alt="Netflix" class="app-logo">
+        <span class="app-label">Netflix</span>
+      </a>
+
+      <a class="tile youtube-tile" href="https://www.youtube.com" data-brand="youtube" tabindex="0">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg" alt="YouTube" class="app-logo">
+        <span class="app-label">YouTube</span>
+      </a>
+
+      <a class="tile" href="#" data-brand="oneplay" tabindex="0">
+        <img src="https://framerusercontent.com/images/z2Ga8pLDDIIcBfH1ClklW42msYo.png" alt="OnePlay" class="app-logo">
+        <span class="app-label">OnePlay</span>
+      </a>
+
+      <a class="tile" href="https://max.com" data-brand="hbo" tabindex="0">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/c/ce/Max_logo.svg" alt="Max" class="app-logo">
+        <span class="app-label">Max</span>
+      </a>
+      
+      <a class="tile" href="https://open.spotify.com" data-brand="spotify" tabindex="0">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/2/26/Spotify_logo_with_text.svg" alt="Spotify" class="app-logo">
+        <span class="app-label">Spotify</span>
+      </a>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ── Hodiny a Pozdrav ──
+  function updateTimeAndGreeting() {
+    const now = new Date();
+    
+    // Čas
+    const h = String(now.getHours()).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
+    document.getElementById('clock').textContent = `${h}:${m}`;
+    
+    // Pozdrav
+    const hour = now.getHours();
+    let greetingText = 'Dobrý večer';
+    if (hour >= 5 && hour < 12) {
+      greetingText = 'Dobré ráno';
+    } else if (hour >= 12 && hour < 18) {
+      greetingText = 'Dobré odpoledne';
+    }
+    document.getElementById('greeting').textContent = greetingText;
+  }
+  
+  updateTimeAndGreeting();
+  setInterval(updateTimeAndGreeting, 10000);
+
+  // ── Logika pro TV navigaci ──
+  const rowApps = document.getElementById('row-apps');
+  const tiles = Array.from(rowApps.querySelectorAll('.tile'));
+  const searchInput = document.getElementById('search-input');
+  const ambient = document.getElementById('ambient');
+  
+  let currentTileIndex = 0; // Pamatuje si, na které dlaždici jsme
+
+  function focusTile(index) {
+    if (tiles.length === 0) return;
+    
+    // Ochrana hranic
+    if (index < 0) index = 0;
+    if (index >= tiles.length) index = tiles.length - 1;
+    
+    currentTileIndex = index;
+    const tile = tiles[currentTileIndex];
+    tile.focus();
+
+    // Vycentrování na obrazovce
+    tile.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+
+    // Změna ambientního pozadí
+    const brand = tile.getAttribute('data-brand');
+    ambient.style.setProperty('--active-color', brand ? `var(--color-${brand})` : `var(--color-default)`);
+  }
+
+  // Nastavení ambientní barvy, když klikneme na vyhledávání
+  searchInput.addEventListener('focus', () => {
+    ambient.style.setProperty('--active-color', `var(--color-search)`);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    const activeElement = document.activeElement;
+    const isSearchFocused = activeElement === searchInput;
+    const isTileFocused = tiles.includes(activeElement);
+
+    // Ignorujeme klávesy, které nepotřebujeme řešit
+    const keys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter'];
+    if (!keys.includes(e.key)) return;
+
+    // Logika, když je vybrané VYHLEDÁVACÍ POLE
+    if (isSearchFocused) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        focusTile(currentTileIndex); // Zpět na poslední vybranou aplikaci
+      }
+      // Šipky doleva a doprava necháme dělat jejich nativní věc (posun v textu)
+      // Enter také necháme nativně odeslat formulář
+      return;
+    }
+
+    // Logika, když je vybraná DLAŽDICE
+    if (isTileFocused) {
+      if (e.key === 'Enter') {
+        window.location.href = activeElement.href;
+        return;
+      }
+
+      e.preventDefault(); // Zabrání klasickému posunu okna
+
+      switch (e.key) {
+        case 'ArrowRight':
+          focusTile(currentTileIndex + 1);
+          break;
+        case 'ArrowLeft':
+          focusTile(currentTileIndex - 1);
+          break;
+        case 'ArrowUp':
+          searchInput.focus(); // Skok nahoru do vyhledávání
+          break;
+        case 'ArrowDown':
+          // Nic nedělat, pod aplikacemi už nic není
+          break;
+      }
+    }
+  });
+
+  // Umožnění kliknutí myší (aktualizace focusu)
+  tiles.forEach((tile, index) => {
+    tile.addEventListener('focus', () => {
+      currentTileIndex = index;
+      const brand = tile.getAttribute('data-brand');
+      ambient.style.setProperty('--active-color', brand ? `var(--color-${brand})` : `var(--color-default)`);
+    });
+  });
+
+  // Focus na vyhledávání rovnou při načtení stránky (jako u domovské obrazovky)
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      searchInput.focus();
+    }, 100);
+  });
+</script>
+
+</body>
+</html>
