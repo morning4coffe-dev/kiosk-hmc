@@ -10,6 +10,8 @@ USER_NAME=$(whoami)
 # Changed to a visible directory (removed the dot) for Snap compatibility
 LAUNCHER_DIR="$HOME/MediaCenter"
 LAUNCHER_HTML="$LAUNCHER_DIR/launcher.html"
+EXTENSIONS_DIR="$LAUNCHER_DIR/extensions"
+UBLOCK_DIR="$EXTENSIONS_DIR/ublock-origin"
 AUTOSTART_DIR="$HOME/.config/autostart"
 DESKTOP_FILE="$AUTOSTART_DIR/media-center.desktop"
 
@@ -24,7 +26,16 @@ echo ""
 # ----------------------------------------------------------
 echo "[1/6] Installing packages..."
 sudo apt update -qq
-sudo apt install -y chromium-browser unclutter xdotool
+
+# Ubuntu 22.04+ ships 'chromium' (snap); older releases use 'chromium-browser' (deb)
+if apt-cache show chromium-browser &>/dev/null 2>&1; then
+    CHROMIUM_PKG="chromium-browser"
+else
+    CHROMIUM_PKG="chromium"
+fi
+
+sudo apt install -y "$CHROMIUM_PKG" unclutter xdotool
+echo "  -> Installed $CHROMIUM_PKG"
 
 # ----------------------------------------------------------
 # 2. Enable auto-login (GDM3 or LightDM)
@@ -76,33 +87,89 @@ else
 fi
 
 # ----------------------------------------------------------
-# 4. Create the kiosk launch script
+# 4. Install uBlock Origin adblocker
 # ----------------------------------------------------------
 echo ""
-echo "[4/6] Creating kiosk launch script..."
+echo "[4/6] Installing uBlock Origin extension..."
+mkdir -p "$EXTENSIONS_DIR"
+
+# Download and extract uBlock Origin (latest release from GitHub)
+UBLOCK_URL="https://github.com/gorhill/uBlock/releases/download/1.58.0/uBlock0.chromium.zip"
+TEMP_ZIP=$(mktemp)
+
+if command -v wget &>/dev/null; then
+    wget -q "$UBLOCK_URL" -O "$TEMP_ZIP" 2>/dev/null || {
+        echo "  !! Failed to download uBlock Origin with wget"
+        TEMP_ZIP=""
+    }
+elif command -v curl &>/dev/null; then
+    curl -sL "$UBLOCK_URL" -o "$TEMP_ZIP" 2>/dev/null || {
+        echo "  !! Failed to download uBlock Origin with curl"
+        TEMP_ZIP=""
+    }
+fi
+
+if [ -n "$TEMP_ZIP" ] && [ -f "$TEMP_ZIP" ]; then
+    rm -rf "$UBLOCK_DIR"
+    mkdir -p "$UBLOCK_DIR"
+    unzip -q "$TEMP_ZIP" -d "$UBLOCK_DIR"
+    rm "$TEMP_ZIP"
+    echo "  -> uBlock Origin installed to $UBLOCK_DIR"
+else
+    echo "  !! Could not download uBlock Origin. You'll need to install it manually."
+    echo "     - Install from Chrome Web Store: https://chrome.google.com/webstore"
+    echo "     - Search for 'uBlock Origin'"
+fi
+
+# ----------------------------------------------------------
+# 5. Create the kiosk launch script
+# ----------------------------------------------------------
+echo ""
+echo "[5/6] Creating kiosk launch script..."
 
 cat > "$LAUNCHER_DIR/start-kiosk.sh" <<'KIOSK'
 #!/bin/bash
 # Wait for the desktop to fully load
 sleep 3
 
-# Disable screen blanking & screensaver
-xset s off
-xset s noblank
-xset -dpms
+LAUNCHER="$HOME/MediaCenter/launcher.html"
 
-# Hide the mouse cursor after 3 seconds of inactivity
+# Detect Wayland vs X11
+if [ "$XDG_SESSION_TYPE" = "wayland" ]; then
+    DISPLAY_FLAGS="--ozone-platform=wayland --enable-features=UseOzonePlatform"
+else
+    # Disable screen blanking & screensaver (X11 only)
+    xset s off
+    xset s noblank
+    xset -dpms
+    DISPLAY_FLAGS=""
+fi
+
+# Hide mouse cursor after 3 s of inactivity
 unclutter -idle 3 -root &
 
 # Kill any existing Chromium instances
-pkill -f chromium-browser 2>/dev/null || true
+pkill -f "chromium" 2>/dev/null || true
 sleep 1
 
-# Updated path here as well to match the visible directory
-LAUNCHER="$HOME/MediaCenter/launcher.html"
+# Resolve the correct binary name
+CHROMIUM_BIN="chromium-browser"
+command -v chromium-browser &>/dev/null || CHROMIUM_BIN="chromium"
+
+# Load uBlock Origin extension if it exists
+LOAD_EXT=""
+if [ -d "$HOME/MediaCenter/extensions/ublock-origin" ]; then
+    LOAD_EXT="--load-extension=$HOME/MediaCenter/extensions/ublock-origin"
+fi
 
 # Launch Chromium in kiosk mode
-chromium-browser \
+# --disable-popup-blocking: lets the launcher open services in new windows
+# --homepage: Alt+Home returns here from any streaming site
+# --user-agent: Chromecast TV UA required for youtube.com/tv; also gives TV UI on Netflix/Disney+/etc.
+$CHROMIUM_BIN \
+    $DISPLAY_FLAGS \
+    $LOAD_EXT \
+    --user-agent="Mozilla/5.0 (Linux; Android 11; Chromecast Build/RC3.220511.180; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/120.0.6099.43 Mobile Safari/537.36 CrKey/1.56.500000" \
     --kiosk \
     --start-fullscreen \
     --start-maximized \
@@ -116,6 +183,8 @@ chromium-browser \
     --noerrdialogs \
     --enable-features=OverlayScrollbar \
     --autoplay-policy=no-user-gesture-required \
+    --disable-popup-blocking \
+    --homepage="file://$LAUNCHER" \
     --check-for-update-interval=31536000 \
     --disable-component-update \
     "file://$LAUNCHER"
@@ -125,10 +194,10 @@ chmod +x "$LAUNCHER_DIR/start-kiosk.sh"
 echo "  -> Created $LAUNCHER_DIR/start-kiosk.sh"
 
 # ----------------------------------------------------------
-# 5. Register as autostart application
+# 6. Register as autostart application
 # ----------------------------------------------------------
 echo ""
-echo "[5/6] Registering autostart entry..."
+echo "[6/7] Registering autostart entry..."
 mkdir -p "$AUTOSTART_DIR"
 
 cat > "$DESKTOP_FILE" <<EOF
@@ -142,10 +211,10 @@ EOF
 echo "  -> Created $DESKTOP_FILE"
 
 # ----------------------------------------------------------
-# 6. Power & performance tweaks
+# 7. Power & performance tweaks
 # ----------------------------------------------------------
 echo ""
-echo "[6/6] Applying power & performance tweaks..."
+echo "[7/7] Applying power & performance tweaks..."
 
 # Prevent lid-close suspend (so you can close the notebook lid
 # if using an external monitor)
@@ -177,14 +246,19 @@ echo ""
 echo "  1. Reboot to test auto-login + kiosk:"
 echo "       sudo reboot"
 echo ""
-echo "  2. To EXIT kiosk mode:  Alt+F4  or  Ctrl+Alt+T (terminal)"
+echo "  2. Navigation shortcuts (shown on-screen in the launcher):"
+echo "     - Alt+Home    : return to the launcher from any streaming site"
+echo "     - Alt+F4      : close the current window / exit kiosk"
+echo "     - Ctrl+Alt+T  : open a terminal (exit kiosk entirely)"
 echo ""
-echo "  3. Recommended Chromium extensions (install manually):"
-echo "     - uBlock Origin   (blocks YouTube ads)"
+echo "  3. Installed & recommended extensions:"
+echo "     ✓ uBlock Origin    (blocks ads on YouTube & all sites)"
+echo ""
+echo "     Optional extensions (install manually from Chrome Web Store):"
 echo "     - SponsorBlock     (skips YouTube sponsor segments)"
 echo "     - Return Dislike   (restores YouTube dislike count)"
-echo "     - Dark Reader       (dark mode on all sites)"
-echo "     - Vimium            (keyboard navigation)"
+echo "     - Dark Reader      (dark mode on all sites)"
+echo "     - Vimium           (keyboard navigation)"
 echo ""
 echo "  4. After first boot, sign in to Netflix/YouTube/etc."
 echo "     once — Chromium will remember your sessions."
