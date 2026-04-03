@@ -165,11 +165,11 @@ fi
 # Launch Chromium in kiosk mode
 # --disable-popup-blocking: lets the launcher open services in new windows
 # --homepage: Alt+Home returns here from any streaming site
-# --user-agent: Chromecast TV UA required for youtube.com/tv; also gives TV UI on Netflix/Disney+/etc.
+# --user-agent: Samsung Tizen TV UA — gives TV UI on Netflix/Disney+/YouTube/etc.
 $CHROMIUM_BIN \
     $DISPLAY_FLAGS \
     $LOAD_EXT \
-    --user-agent="Mozilla/5.0 (Linux; Android 11; Chromecast Build/RC3.220511.180; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/120.0.6099.43 Mobile Safari/537.36 CrKey/1.56.500000" \
+    --user-agent="Mozilla/5.0 (SMART-TV; Linux; Tizen 6.0) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/4.0 Chrome/76.0.3809.146 TV Safari/537.36" \
     --kiosk \
     --start-fullscreen \
     --start-maximized \
