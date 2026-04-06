@@ -2,43 +2,55 @@
 <html lang="cs">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Media Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0,0" />
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
-
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   :root {
-    --bg:            #09090e;
-    --surface:       #14151c;
-    --surface-2:     #1e1f29;
-    --surface-hover: #282934;
-    --text:          #ffffff;
-    --text-dim:      #7c8494;
-    --radius:        14px;
-    --radius-lg:     20px;
+    --bg:              #111115;
+    --surface:         #1c1c22;
+    --surface-2:       #26262f;
+    --surface-hover:   #303038;
+    --text:            #ffffff;
+    --text-dim:        rgba(255,255,255,0.45);
+    --text-mid:        rgba(255,255,255,0.75);
+    --focus-ring:      3px solid rgba(255,255,255,0.92);
+    --focus-scale:     1.08;
+    --radius:          10px;
+    --radius-lg:       12px;
+    --row-safe-x:      clamp(14px, 1.6vw, 28px);
+    --row-safe-y:      clamp(18px, 2vh, 32px);
+    --hint-bar-height: clamp(52px, 6.5vh, 76px);
+    --ambient-primary: 80, 90, 110;
+    --ambient-secondary: 124, 134, 156;
+    --status-ok:       61, 220, 132;
+    --status-warn:     255, 199, 87;
+    --status-bad:      255, 107, 107;
 
-    --color-netflix:  229, 9,   20;
-    --color-youtube:  255, 0,    0;
-    --color-disney:   17,  60,  207;
-    --color-max:      89,  55,  203;
-    --color-prime:    0,   168, 225;
-    --color-oneplay:  255, 87,   34;
-    --color-spotify:  30,  215,  96;
-    --color-ytmusic:  255,  0,    0;
-    --color-twitch:   145, 70,  255;
-    --color-plex:     229, 160,  13;
-    --color-jellyfin: 0,   164, 220;
-    --color-search:   92,  124, 250;
-    --color-default:  80,   90, 110;
+    --color-netflix:  229,  9,  20;
+    --color-youtube:  255,  0,   0;
+    --color-disney:    17, 60, 207;
+    --color-max:       89, 55, 203;
+    --color-prime:      0,168, 225;
+    --color-oneplay:  255, 87,  34;
+    --color-spotify:   30,215,  96;
+    --color-ytmusic:  255,  0,   0;
+    --color-twitch:   145, 70, 255;
+    --color-plex:     229,160,  13;
+    --color-jellyfin:   0,164, 220;
+    --color-search:    92,124, 250;
+    --color-default:   80, 90, 110;
   }
 
   html, body {
     height: 100vh;
     background: var(--bg);
     color: var(--text);
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Nunito', sans-serif;
     overflow: hidden;
     user-select: none;
     -webkit-font-smoothing: antialiased;
@@ -46,99 +58,226 @@
     flex-direction: column;
   }
 
-  /* ── Ambient glow ── */
   .ambient-bg {
     position: fixed;
     inset: 0;
     z-index: 0;
     background:
-      radial-gradient(ellipse 90% 55% at 50% -15%,
-        rgba(var(--active-color, var(--color-default)), 0.22) 0%,
-        transparent 65%),
-      radial-gradient(ellipse 50% 40% at 85% 85%,
-        rgba(var(--active-color, var(--color-default)), 0.07) 0%,
-        transparent 60%);
-    transition: background 0.7s ease;
+      radial-gradient(ellipse 82% 54% at 50% -10%,
+        rgba(var(--ambient-primary), 0.22) 0%, transparent 60%),
+      radial-gradient(ellipse 46% 36% at 88% 86%,
+        rgba(var(--ambient-secondary), 0.12) 0%, transparent 56%),
+      radial-gradient(ellipse 34% 28% at 14% 82%,
+        rgba(var(--ambient-primary), 0.08) 0%, transparent 58%);
+    transition: background 0.65s ease;
     pointer-events: none;
   }
 
-  /* ── Shell grid ── */
   .shell {
     position: relative;
     z-index: 1;
-    display: grid;
-    grid-template-rows: auto auto 1fr;
+    display: flex;
+    flex-direction: column;
     flex: 1;
     min-height: 0;
-    padding: 4.5vh 5vw 3.5vh;
-    gap: 2.8vh;
+    padding-bottom: var(--hint-bar-height);
   }
 
-  /* ── Topbar ── */
   .topbar {
     display: flex;
+    align-items: center;
     justify-content: space-between;
-    align-items: flex-end;
-    animation: fadeDown 0.5s ease both;
+    padding: clamp(18px,2.2vh,32px) clamp(32px,4vw,64px) clamp(10px,1.2vh,18px);
+    animation: fadeDown 0.45s ease both;
+    flex-shrink: 0;
   }
 
-  .greeting {
-    font-size: 2.1rem;
-    font-weight: 300;
-    letter-spacing: 0.02em;
+  .nav-tabs {
+    display: flex;
+    align-items: center;
+    gap: 4px;
   }
+
+  .nav-tab {
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.015em;
+    color: var(--text-dim);
+    padding: 7px 18px;
+    border-radius: 50px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    outline: none;
+    transition: color 0.18s, background 0.18s;
+    font-family: inherit;
+  }
+
+  .nav-tab.active,
+  .nav-tab:focus,
+  .nav-tab:hover {
+    color: var(--text);
+    background: rgba(255,255,255,0.1);
+  }
+
+  .nav-tab:focus { box-shadow: 0 0 0 2px rgba(255,255,255,0.5); }
 
   .time-block {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .time-text {
     text-align: right;
     line-height: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
   }
 
   .clock {
-    font-size: 2.4rem;
+    font-size: 2.2rem;
     font-weight: 300;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.04em;
   }
 
   .date-line {
-    font-size: 0.95rem;
+    font-size: 0.82rem;
     color: var(--text-dim);
-    margin-top: 0.35rem;
+    margin-top: 4px;
+    letter-spacing: 0.03em;
+  }
+
+  /* ── Settings button — TV style ── */
+  .settings-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1.5px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.06);
+    color: var(--text);
+    border-radius: 999px;
+    padding: 10px 20px 10px 14px;
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
     letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: background 0.18s ease, transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  }
+
+  .settings-btn .settings-btn-icon {
+    font-size: 1.25rem;
+    color: rgba(255,255,255,0.7);
+    transition: color 0.18s, transform 0.4s ease;
+    display: block;
+  }
+
+  .settings-btn:hover,
+  .settings-btn:focus {
+    outline: none;
+    background: rgba(255,255,255,0.13);
+    border-color: rgba(255,255,255,0.32);
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.08);
+    transform: translateY(-1px);
+  }
+
+  .settings-btn:hover .settings-btn-icon,
+  .settings-btn:focus .settings-btn-icon {
+    color: #fff;
+    transform: rotate(30deg);
+  }
+
+  .status-overlay {
+    position: fixed;
+    top: clamp(82px, 10vh, 126px);
+    right: clamp(18px, 3vw, 42px);
+    z-index: 70;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 10px;
+    pointer-events: none;
+  }
+
+  .status-chip {
+    inline-size: 46px;
+    block-size: 46px;
+    border-radius: 16px;
+    display: grid;
+    place-items: center;
+    position: relative;
+    color: var(--text);
+  }
+
+  .status-icon { font-size: 1.2rem; line-height: 1; }
+
+  .status-chip[data-state="ok"]   { border-color: rgba(var(--status-ok),  0.42); }
+  .status-chip[data-state="warn"] { border-color: rgba(var(--status-warn),0.42); }
+  .status-chip[data-state="bad"]  { border-color: rgba(var(--status-bad), 0.42); }
+
+  .status-chip[data-state="ok"]   .status-icon { color: rgba(var(--status-ok),  0.98); }
+  .status-chip[data-state="warn"] .status-icon { color: rgba(var(--status-warn),0.98); }
+  .status-chip[data-state="bad"]  .status-icon { color: rgba(var(--status-bad), 0.98); }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0;
+    margin: -1px; overflow: hidden; clip: rect(0,0,0,0);
+    white-space: nowrap; border: 0;
   }
 
   /* ── Search bar ── */
-  .search-wrap {
-    max-width: 52%;
-    opacity: 0;
-    animation: fadeUp 0.45s 0.1s ease both;
+  .search-area {
+    padding: clamp(8px,1vh,14px) clamp(32px,4vw,64px) clamp(12px,1.4vh,22px);
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-shrink: 0;
+    animation: fadeUp 0.4s 0.08s ease both;
+  }
+
+  .greeting {
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: var(--text-mid);
+    white-space: nowrap;
+  }
+
+  .search-divider {
+    width: 1px; height: 22px;
+    background: rgba(255,255,255,0.12);
+    flex-shrink: 0;
   }
 
   #search-form {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     background: var(--surface);
-    border: 2px solid transparent;
+    border: 1.5px solid rgba(255,255,255,0.08);
     border-radius: 50px;
-    padding: 1.35vh 1.6vw;
-    transition: all 0.22s cubic-bezier(0.33, 1, 0.68, 1);
+    padding: clamp(8px,1vh,12px) clamp(14px,1.4vw,22px);
+    transition: all 0.2s cubic-bezier(0.33,1,0.68,1);
+    min-width: 280px;
+    max-width: 440px;
+    flex: 1;
   }
 
   #search-form:focus-within,
   #search-form.tv-focus {
     background: var(--surface-2);
-    border-color: rgba(255, 255, 255, 0.85);
-    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.08),
-                0 16px 40px rgba(0, 0, 0, 0.55);
-    transform: scale(1.015);
+    border-color: rgba(255,255,255,0.88);
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.08);
+    transform: scale(1.012);
   }
 
   .search-icon {
-    width: 21px;
-    height: 21px;
+    width: 18px; height: 18px;
     color: var(--text-dim);
     flex-shrink: 0;
-    transition: color 0.2s;
+    transition: color 0.15s;
   }
 
   #search-form:focus-within .search-icon,
@@ -148,8 +287,9 @@
     background: none;
     border: none;
     color: var(--text);
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-family: inherit;
+    font-weight: 400;
     width: 100%;
     outline: none;
   }
@@ -160,216 +300,857 @@
   .content {
     display: flex;
     flex-direction: column;
-    gap: 2.2vh;
-    /* overflow: visible so scaled tiles are never clipped by the container */
+    gap: clamp(10px,1.4vh,20px);
+    flex: 1;
+    min-height: 0;
+    padding: 0;
   }
 
   .section {
     opacity: 0;
-    animation: fadeUp 0.45s ease both;
+    animation: fadeUp 0.4s ease both;
+    flex-shrink: 0;
   }
 
-  .section:nth-child(1) { animation-delay: 0.18s; }
-  .section:nth-child(2) { animation-delay: 0.28s; }
+  .section.is-hidden { display: none; }
+  .section:nth-child(1) { animation-delay: 0.16s; }
+  .section:nth-child(2) { animation-delay: 0.26s; }
 
   .section-label {
-    font-size: 0.78rem;
-    font-weight: 500;
+    font-size: 0.72rem;
+    font-weight: 700;
     color: var(--text-dim);
     text-transform: uppercase;
-    letter-spacing: 0.14em;
-    margin-bottom: 1.4vh;
-    padding-left: 3px;
+    letter-spacing: 0.18em;
+    margin-bottom: clamp(8px,1vh,16px);
+    padding-left: clamp(32px,4vw,64px);
   }
 
-  /* scroll wrapper: overflow clips at padding-box, so padding gives
-     the scaled tiles (1.08×) room to be painted without clipping */
   .row-scroll {
     overflow-x: auto;
+    overflow-y: hidden;
     scrollbar-width: none;
     -ms-overflow-style: none;
-    padding-block: 1.4vw;    /* ≥ tile_height × (scale−1) / 2 */
-    padding-inline: 2px;
+    padding: var(--row-safe-y) var(--row-safe-x);
+    padding-left: calc(clamp(32px,4vw,64px) - var(--row-safe-x) + var(--row-safe-x));
+    scroll-padding-inline: clamp(32px,4vw,64px);
+    overscroll-behavior-x: contain;
   }
 
   .row-scroll::-webkit-scrollbar { display: none; }
 
   .row {
     display: flex;
-    gap: 1.1vw;
-    scroll-behavior: smooth;
+    gap: clamp(10px,1vw,16px);
+    min-width: max-content;
+    align-items: stretch;
+    padding-left: clamp(0px,0.2vw,4px);
   }
 
-  /* ── Tiles ── */
   .tile {
     flex: 0 0 auto;
-    width: 15.5vw;
+    inline-size: clamp(180px,17vw,260px);
     aspect-ratio: 16 / 9;
     border-radius: var(--radius-lg);
     background: var(--surface);
+    border: 1.5px solid rgba(255,255,255,0.06);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 1vh;
+    gap: 0.6vh;
     text-decoration: none;
     color: var(--text);
     position: relative;
     overflow: hidden;
     outline: none;
+    transform-origin: center center;
+    will-change: transform;
     transition:
-      transform 0.22s cubic-bezier(0.33, 1, 0.68, 1),
-      box-shadow 0.22s ease,
-      background 0.22s ease;
+      transform 0.2s cubic-bezier(0.33,1,0.68,1),
+      box-shadow 0.2s ease,
+      border-color 0.2s ease;
   }
 
-  /* Subtle inner highlight on focus */
-  .tile::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: rgba(255, 255, 255, 0);
-    transition: background 0.22s ease;
-    pointer-events: none;
-  }
-
-  .tile:focus::after, .tile:hover::after {
-    background: rgba(255, 255, 255, 0.04);
-  }
-
-  /* YouTube special white background */
-  .tile[data-brand="youtube"] { background: #ffffff; }
-  .tile[data-brand="youtube"] .app-label { color: #333; }
-  .tile[data-brand="youtube"]:focus,
-  .tile[data-brand="youtube"]:hover { background: #f0f0f0; }
-
-  .app-logo {
-    width: 56%;
-    height: auto;
-    max-height: 50%;
-    object-fit: contain;
-    transition: transform 0.2s ease;
-    position: relative;
-    z-index: 1;
-  }
-
-  .app-label {
-    font-size: 0.9rem;
-    font-weight: 500;
-    letter-spacing: 0.02em;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    position: relative;
-    z-index: 1;
-  }
-
-  /* Focus state */
-  .tile:focus, .tile:hover {
-    transform: scale(1.08);
+  .tile:focus,
+  .tile:hover {
+    transform: scale(var(--focus-scale));
+    border-color: rgba(255,255,255,0.9);
     box-shadow:
-      0 22px 55px rgba(0, 0, 0, 0.85),
-      0 0 0 2px rgba(255, 255, 255, 0.85),
-      0 0 0 5px rgba(255, 255, 255, 0.08);
-    background: var(--surface-hover);
+      0 0 0 3px rgba(255,255,255,0.88),
+      0 20px 50px rgba(0,0,0,0.85),
+      0 8px 20px rgba(0,0,0,0.6);
     z-index: 10;
   }
 
-  .tile:focus .app-label,
-  .tile:hover .app-label { opacity: 1; }
+  .tile[data-brand="youtube"],
+  .tile[data-brand="disney"],
+  .tile[data-brand="prime"],
+  .tile[data-brand="plex"] {
+    background: rgba(245,245,245,0.88);
+    border-color: rgba(0,0,0,0.08);
+  }
 
-  .tile:focus .app-logo,
-  .tile:hover .app-logo { transform: scale(1.06); }
+  .tile[data-brand="youtube"] .app-label,
+  .tile[data-brand="disney"] .app-label,
+  .tile[data-brand="prime"] .app-label,
+  .tile[data-brand="plex"] .app-label { color: #222; }
 
-  /* ── Secondary (smaller square) tiles ── */
+  .tile[data-brand="youtube"]:focus, .tile[data-brand="youtube"]:hover,
+  .tile[data-brand="disney"]:focus,  .tile[data-brand="disney"]:hover,
+  .tile[data-brand="prime"]:focus,   .tile[data-brand="prime"]:hover,
+  .tile[data-brand="plex"]:focus,    .tile[data-brand="plex"]:hover {
+    background: rgba(235,235,235,0.94);
+  }
+
+  .app-logo {
+    width: 58%; height: auto; max-height: 52%;
+    object-fit: contain;
+    transition: transform 0.18s ease;
+    position: relative; z-index: 1;
+  }
+
+  .app-label {
+    position: absolute;
+    left: 50%; bottom: 14px;
+    transform: translateX(-50%);
+    width: calc(100% - 24px);
+    text-align: center;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: var(--text);
+    opacity: 0;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .tile:focus .app-label, .tile:hover .app-label { opacity: 1; }
+  .tile:focus .app-logo, .tile:hover .app-logo { transform: scale(1.05); }
+
   .tile.sm {
-    width: 11vw;
+    inline-size: clamp(100px,10.5vw,160px);
     aspect-ratio: 1;
     border-radius: var(--radius);
-    gap: 0.7vh;
+    gap: 0.5vh;
   }
 
-  .tile.sm .app-logo {
-    width: 50%;
-    max-height: 48%;
-  }
-
-  .tile.sm .app-label { font-size: 0.82rem; }
+  .tile.sm .app-logo { width: 52%; max-height: 48%; }
+  .tile.sm .app-label { font-size: 0.78rem; }
 
   /* ── Bottom hint bar ── */
   .hints {
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    bottom: 0; left: 0; right: 0;
     z-index: 50;
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
-    gap: 3vw;
-    padding: 1.2vh 5vw;
-    background: linear-gradient(to top, rgba(9, 9, 14, 0.9) 0%, transparent 100%);
+    align-items: center;
+    gap: 2.6vw;
+    row-gap: 8px;
+    padding: 1.1vh 5vw 1.5vh;
+    background: linear-gradient(to top, rgba(17,17,21,0.96) 0%, transparent 100%);
     pointer-events: none;
     animation: fadeUp 0.5s 0.5s ease both;
   }
 
   .hint {
-    font-size: 0.78rem;
+    font-size: 0.72rem;
     color: var(--text-dim);
     letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    gap: 5px;
   }
 
   .hint kbd {
     font-family: inherit;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-    padding: 1px 6px;
-    font-size: 0.72rem;
-    color: rgba(255, 255, 255, 0.65);
+    background: rgba(255,255,255,0.09);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 5px;
+    padding: 1px 7px;
+    font-size: 0.68rem;
+    color: rgba(255,255,255,0.6);
   }
 
   /* ── Launch toast ── */
   .launch-toast {
     position: fixed;
-    top: 50%;
-    left: 50%;
+    top: 50%; left: 50%;
     translate: -50% -50%;
     z-index: 200;
-    background: rgba(20, 21, 28, 0.94);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: var(--radius-lg);
-    padding: 2.5vh 3vw;
+    background: rgba(28,28,34,0.96);
+    border: 1.5px solid rgba(255,255,255,0.12);
+    border-radius: 16px;
+    padding: 2.2vh 2.8vw;
     text-align: center;
-    backdrop-filter: blur(16px);
-    opacity: 0;
-    scale: 0.95;
-    transition: opacity 0.2s ease, scale 0.2s ease;
+    backdrop-filter: blur(20px);
+    opacity: 0; scale: 0.94;
+    transition: opacity 0.18s ease, scale 0.18s ease;
     pointer-events: none;
+    min-width: 220px;
   }
 
-  .launch-toast.visible {
-    opacity: 1;
-    scale: 1;
-  }
+  .launch-toast.visible { opacity: 1; scale: 1; }
 
   .launch-toast-title {
-    font-size: 1.4rem;
-    font-weight: 400;
-    margin-bottom: 0.5vh;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.4vh;
   }
 
   .launch-toast-sub {
-    font-size: 0.88rem;
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    font-weight: 400;
+  }
+
+  /* ── Generic overlay backdrop ── */
+  .overlay-backdrop {
+    position: fixed; inset: 0;
+    z-index: 110;
+    background: rgba(7,7,10,0.72);
+    backdrop-filter: blur(14px);
+    opacity: 0;
+    transition: opacity 0.22s ease;
+  }
+
+  .overlay-backdrop.visible { opacity: 1; }
+
+  /* ── Small panel card (search / recent) ── */
+  .panel-card {
+    position: fixed;
+    top: 50%; left: 50%;
+    z-index: 120;
+    inline-size: min(720px, calc(100vw - 56px));
+    transform: translate(-50%, -50%) scale(0.96);
+    padding: 24px 24px 20px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(22,22,28,0.94);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.48);
+    backdrop-filter: blur(24px);
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+
+  .panel-card.visible {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  .panel-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .panel-title {
+    font-size: 1.18rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .panel-sub {
+    margin-top: 4px;
+    font-size: 0.84rem;
     color: var(--text-dim);
   }
 
-  /* ── Animations ── */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(22px); }
-    to   { opacity: 1; transform: translateY(0); }
+  .panel-chip-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 14px;
   }
 
+  .panel-chip {
+    border: none;
+    border-radius: 999px;
+    padding: 8px 14px;
+    background: rgba(255,255,255,0.08);
+    color: var(--text-mid);
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+  }
+
+  .panel-chip.active,
+  .panel-chip:focus,
+  .panel-chip:hover {
+    background: rgba(255,255,255,0.16);
+    color: var(--text);
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.14);
+    outline: none;
+  }
+
+  .panel-form {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .panel-input {
+    flex: 1;
+    min-width: 0;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    background: rgba(255,255,255,0.06);
+    color: var(--text);
+    font: inherit;
+    font-size: 1rem;
+    padding: 14px 16px;
+    outline: none;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  }
+
+  .panel-input:focus {
+    border-color: rgba(255,255,255,0.26);
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.08);
+  }
+
+  .panel-btn {
+    border: none;
+    border-radius: 14px;
+    padding: 14px 18px;
+    background: rgba(255,255,255,0.12);
+    color: var(--text);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+  }
+
+  .panel-btn.primary { background: rgba(255,255,255,0.2); }
+
+  .panel-btn:focus,
+  .panel-btn:hover {
+    outline: none;
+    background: rgba(255,255,255,0.24);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 18px rgba(0,0,0,0.18);
+  }
+
+  .recent-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: min(48vh, 420px);
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+
+  .recent-item {
+    inline-size: 100%;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    background: rgba(255,255,255,0.05);
+    color: var(--text);
+    font: inherit;
+    text-align: left;
+    padding: 14px 16px;
+    display: grid;
+    grid-template-columns: 12px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    cursor: pointer;
+    transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  }
+
+  .recent-item:focus,
+  .recent-item:hover {
+    outline: none;
+    background: rgba(255,255,255,0.11);
+    border-color: rgba(255,255,255,0.2);
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.14);
+  }
+
+  .recent-swatch {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: rgba(var(--swatch-color, var(--color-default)), 0.96);
+    box-shadow: 0 0 0 5px rgba(var(--swatch-color, var(--color-default)), 0.16);
+  }
+
+  .recent-copy { min-width: 0; }
+
+  .recent-title {
+    font-size: 0.94rem;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .recent-sub {
+    margin-top: 3px;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .recent-time { font-size: 0.78rem; color: var(--text-dim); white-space: nowrap; }
+  .recent-empty { padding: 26px 0 8px; color: var(--text-dim); font-size: 0.9rem; }
+
+  /* ═══════════════════════════════════════════
+     TV SETTINGS PANEL
+     Full-screen two-column layout:
+     left = category sidebar, right = content
+  ═══════════════════════════════════════════ */
+
+  .settings-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 130;
+    display: flex;
+    align-items: stretch;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.28s ease;
+  }
+
+  .settings-overlay.visible {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  /* Sidebar */
+  .settings-sidebar {
+    width: clamp(240px, 22vw, 320px);
+    flex-shrink: 0;
+    background: rgba(14,14,18,0.97);
+    border-right: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    flex-direction: column;
+    padding: clamp(24px,3vh,44px) 0 clamp(16px,2vh,28px);
+    transform: translateX(-32px);
+    transition: transform 0.3s cubic-bezier(0.33,1,0.68,1);
+  }
+
+  .settings-overlay.visible .settings-sidebar {
+    transform: translateX(0);
+  }
+
+  .settings-sidebar-header {
+    padding: 0 clamp(20px,2vw,32px) clamp(24px,3vh,36px);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    padding-bottom: clamp(18px,2.4vh,28px);
+    margin-bottom: clamp(10px,1.4vh,18px);
+  }
+
+  .settings-sidebar-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(255,255,255,0.09);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .settings-sidebar-icon .material-symbols-outlined {
+    font-size: 1.6rem;
+    color: rgba(255,255,255,0.75);
+  }
+
+  .settings-sidebar-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+  }
+
+  .settings-sidebar-sub {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+
+  /* Category nav items */
+  .settings-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 0 clamp(12px,1.2vw,20px);
+    flex: 1;
+  }
+
+  .settings-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 15px clamp(12px,1.2vw,18px);
+    border-radius: 14px;
+    border: 1.5px solid transparent;
+    background: transparent;
+    color: var(--text-mid);
+    font: inherit;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+    position: relative;
+    outline: none;
+  }
+
+  .settings-nav-item .nav-item-icon {
+    font-size: 1.4rem;
+    flex-shrink: 0;
+    opacity: 0.65;
+    transition: opacity 0.16s;
+  }
+
+  .settings-nav-item .nav-item-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .settings-nav-item .nav-item-label {
+    display: block;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .settings-nav-item .nav-item-desc {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    margin-top: 2px;
+    font-weight: 400;
+  }
+
+  .settings-nav-item .nav-item-arrow {
+    font-size: 1.1rem;
+    opacity: 0;
+    transition: opacity 0.16s, transform 0.16s;
+    transform: translateX(-6px);
+  }
+
+  .settings-nav-item:hover,
+  .settings-nav-item:focus {
+    background: rgba(255,255,255,0.08);
+    color: var(--text);
+    border-color: rgba(255,255,255,0.1);
+  }
+
+  .settings-nav-item:hover .nav-item-icon,
+  .settings-nav-item:focus .nav-item-icon { opacity: 1; }
+
+  .settings-nav-item:hover .nav-item-arrow,
+  .settings-nav-item:focus .nav-item-arrow {
+    opacity: 0.6;
+    transform: translateX(0);
+  }
+
+  .settings-nav-item.active {
+    background: rgba(255,255,255,0.12);
+    color: var(--text);
+    border-color: rgba(255,255,255,0.18);
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.06);
+  }
+
+  .settings-nav-item.active .nav-item-icon { opacity: 1; }
+
+  .settings-nav-item.active .nav-item-arrow {
+    opacity: 0.75;
+    transform: translateX(0);
+  }
+
+  /* Status dot on nav item */
+  .nav-status-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .nav-status-dot.ok   { background: rgba(var(--status-ok),  0.9); }
+  .nav-status-dot.warn { background: rgba(var(--status-warn),0.9); }
+  .nav-status-dot.bad  { background: rgba(var(--status-bad), 0.9); }
+
+  /* Sidebar footer */
+  .settings-sidebar-footer {
+    padding: clamp(12px,1.6vh,20px) clamp(12px,1.2vw,20px) 0;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    margin-top: 8px;
+  }
+
+  .settings-close-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px clamp(12px,1.2vw,18px);
+    border-radius: 14px;
+    border: 1.5px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
+    color: var(--text-dim);
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.16s, color 0.16s, border-color 0.16s, box-shadow 0.16s;
+    outline: none;
+  }
+
+  .settings-close-btn .material-symbols-outlined {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+
+  .settings-close-btn:hover,
+  .settings-close-btn:focus {
+    background: rgba(255,255,255,0.1);
+    color: var(--text);
+    border-color: rgba(255,255,255,0.24);
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.06);
+  }
+
+  /* Content pane */
+  .settings-content {
+    flex: 1;
+    min-width: 0;
+    background: rgba(18,18,22,0.95);
+    display: flex;
+    flex-direction: column;
+    transform: translateX(20px);
+    opacity: 0;
+    transition: transform 0.35s 0.06s cubic-bezier(0.33,1,0.68,1), opacity 0.35s 0.06s ease;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.12) transparent;
+  }
+
+  .settings-overlay.visible .settings-content {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  .settings-pane {
+    display: none;
+    flex-direction: column;
+    gap: 0;
+    padding: clamp(28px,3.5vh,52px) clamp(32px,4vw,72px);
+    flex: 1;
+  }
+
+  .settings-pane.active { display: flex; }
+
+  .settings-pane-title {
+    font-size: clamp(1.6rem, 2.8vw, 2.2rem);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin-bottom: 6px;
+  }
+
+  .settings-pane-sub {
+    font-size: 0.95rem;
+    color: var(--text-dim);
+    margin-bottom: clamp(24px,3.5vh,44px);
+  }
+
+  /* Settings row — a labeled group */
+  .settings-row {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: clamp(18px,2.4vh,28px) 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .settings-row:last-child { border-bottom: none; }
+
+  .settings-row-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--text-dim);
+  }
+
+  /* Language option buttons */
+  .lang-options {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .lang-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 24px;
+    border-radius: 16px;
+    border: 2px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
+    color: var(--text-mid);
+    font: inherit;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    outline: none;
+    min-width: 160px;
+  }
+
+  .lang-btn .lang-flag {
+    font-size: 1.5rem;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .lang-btn .lang-name { flex: 1; }
+
+  .lang-btn .lang-check {
+    font-size: 1.1rem;
+    opacity: 0;
+    transition: opacity 0.16s;
+  }
+
+  .lang-btn.active {
+    border-color: rgba(255,255,255,0.7);
+    background: rgba(255,255,255,0.12);
+    color: var(--text);
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.08);
+  }
+
+  .lang-btn.active .lang-check { opacity: 1; }
+
+  .lang-btn:hover,
+  .lang-btn:focus {
+    border-color: rgba(255,255,255,0.4);
+    background: rgba(255,255,255,0.1);
+    color: var(--text);
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.06);
+  }
+
+  /* Settings action buttons */
+  .settings-action-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .settings-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 18px 22px;
+    border-radius: 16px;
+    border: 1.5px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
+    color: var(--text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    outline: none;
+  }
+
+  .settings-action-btn .action-icon {
+    font-size: 1.5rem;
+    opacity: 0.7;
+    flex-shrink: 0;
+    transition: opacity 0.16s;
+  }
+
+  .settings-action-btn .action-text { flex: 1; min-width: 0; }
+
+  .settings-action-btn .action-label {
+    display: block;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  .settings-action-btn .action-desc {
+    display: block;
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    margin-top: 3px;
+    font-weight: 400;
+  }
+
+  .settings-action-btn .action-badge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.1);
+    color: var(--text-mid);
+    flex-shrink: 0;
+    letter-spacing: 0.04em;
+  }
+
+  .settings-action-btn .action-badge.ok   { background: rgba(var(--status-ok),  0.18); color: rgba(var(--status-ok),  0.95); }
+  .settings-action-btn .action-badge.warn { background: rgba(var(--status-warn),0.18); color: rgba(var(--status-warn),0.95); }
+  .settings-action-btn .action-badge.bad  { background: rgba(var(--status-bad), 0.18); color: rgba(var(--status-bad), 0.95); }
+
+  .settings-action-btn:hover,
+  .settings-action-btn:focus {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.22);
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.06);
+    transform: translateX(4px);
+  }
+
+  .settings-action-btn:hover .action-icon,
+  .settings-action-btn:focus .action-icon { opacity: 1; }
+
+  .settings-action-btn.danger {
+    border-color: rgba(var(--status-bad),0.2);
+  }
+
+  .settings-action-btn.danger:hover,
+  .settings-action-btn.danger:focus {
+    border-color: rgba(var(--status-bad),0.4);
+    background: rgba(var(--status-bad),0.08);
+  }
+
+  /* Info rows in About pane */
+  .about-info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .about-info-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    font-size: 0.95rem;
+  }
+
+  .about-info-row:last-child { border-bottom: none; }
+
+  .about-info-key { color: var(--text-dim); }
+  .about-info-val { font-weight: 600; }
+
+  @media (max-width: 980px) {
+    .settings-sidebar { width: clamp(200px, 32vw, 260px); }
+    .panel-form { flex-direction: column; align-items: stretch; }
+    .panel-btn { width: 100%; }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
   @keyframes fadeDown {
-    from { opacity: 0; transform: translateY(-14px); }
+    from { opacity: 0; transform: translateY(-12px); }
     to   { opacity: 1; transform: translateY(0); }
   }
 </style>
@@ -378,138 +1159,456 @@
 
 <div class="ambient-bg" id="ambient"></div>
 
+<div class="status-overlay" id="status-overlay" aria-live="polite">
+  <div class="status-chip" id="status-network" data-state="ok" aria-label="Síť online">
+    <span class="status-icon material-symbols-outlined" aria-hidden="true">wifi</span>
+    <span class="sr-only" id="network-status">Online</span>
+  </div>
+  <div class="status-chip" id="status-battery" data-state="warn" aria-label="Baterie zjišťuji">
+    <span class="status-icon material-symbols-outlined" aria-hidden="true">battery_alert</span>
+    <span class="sr-only" id="battery-status">Zjišťuji…</span>
+  </div>
+  <div class="status-chip" id="status-updates" data-state="ok" aria-label="Aktualizace dnes">
+    <span class="status-icon material-symbols-outlined" aria-hidden="true">update</span>
+    <span class="sr-only" id="updates-status">Launcher dnes</span>
+  </div>
+</div>
+
 <div class="shell">
 
-  <!-- Topbar -->
   <div class="topbar">
-    <div class="greeting" id="greeting">Dobré ráno</div>
+    <nav class="nav-tabs" id="nav-tabs">
+      <button class="nav-tab active" data-tab="0" data-i18n="tab.home">Domů</button>
+      <button class="nav-tab"        data-tab="1" data-i18n="tab.streaming">Streaming</button>
+      <button class="nav-tab"        data-tab="2" data-i18n="tab.music">Hudba</button>
+      <button class="nav-tab"        data-tab="3" data-i18n="tab.other">Ostatní</button>
+    </nav>
     <div class="time-block">
-      <div class="clock" id="clock">00:00</div>
-      <div class="date-line" id="date-line"></div>
+      <div class="time-text">
+        <div class="clock" id="clock">00:00</div>
+        <div class="date-line" id="date-line"></div>
+      </div>
+      <button class="settings-btn" id="settings-button" type="button" aria-label="Otevřít nastavení">
+        <span class="material-symbols-outlined settings-btn-icon">settings</span>
+        <span class="settings-btn-label" data-i18n="settings.title">Nastavení</span>
+      </button>
     </div>
   </div>
 
-  <!-- Search -->
-  <div class="search-wrap">
+  <div class="search-area">
+    <div class="greeting" id="greeting">Dobré ráno</div>
+    <div class="search-divider"></div>
     <form id="search-form" action="https://www.google.com/search" method="GET">
       <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
       </svg>
       <input type="text" name="q" id="search-input"
-             placeholder="Hledat na webu…" autocomplete="off" spellcheck="false">
+             placeholder="Hledat na webu…" data-i18n-placeholder="search.placeholder"
+             autocomplete="off" spellcheck="false">
     </form>
   </div>
 
-  <!-- Rows -->
   <div class="content">
 
-    <!-- Streaming -->
-    <div class="section" data-row="0">
-      <div class="section-label">Streaming</div>
+    <div class="section" data-row="0" data-section="streaming">
+      <div class="section-label" data-i18n="section.streaming">Streaming</div>
       <div class="row-scroll"><div class="row">
-
         <a class="tile" href="https://www.netflix.com" data-brand="netflix" data-name="Netflix" tabindex="-1">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg"
-               alt="Netflix" class="app-logo">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg" alt="Netflix" class="app-logo">
           <span class="app-label">Netflix</span>
         </a>
-
         <a class="tile" href="https://www.youtube.com/tv" data-brand="youtube" data-name="YouTube TV" tabindex="-1">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg"
-               alt="YouTube TV" class="app-logo">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg" alt="YouTube TV" class="app-logo">
           <span class="app-label">YouTube TV</span>
         </a>
-
         <a class="tile" href="https://www.disneyplus.com" data-brand="disney" data-name="Disney+" tabindex="-1">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg"
-               alt="Disney+" class="app-logo">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg" alt="Disney+" class="app-logo">
           <span class="app-label">Disney+</span>
         </a>
-
         <a class="tile" href="https://max.com" data-brand="max" data-name="Max" tabindex="-1">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/c/ce/Max_logo.svg"
-               alt="Max" class="app-logo">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/c/ce/Max_logo.svg" alt="Max" class="app-logo">
           <span class="app-label">Max</span>
         </a>
-
         <a class="tile" href="https://www.primevideo.com" data-brand="prime" data-name="Prime Video" tabindex="-1">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/1/11/Amazon_Prime_Video_logo.svg"
-               alt="Prime Video" class="app-logo">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/1/11/Amazon_Prime_Video_logo.svg" alt="Prime Video" class="app-logo">
           <span class="app-label">Prime Video</span>
         </a>
-
         <a class="tile" href="https://www.oneplay.cz" data-brand="oneplay" data-name="OnePlay" tabindex="-1">
-          <img src="https://framerusercontent.com/images/z2Ga8pLDDIIcBfH1ClklW42msYo.png"
-               alt="OnePlay" class="app-logo">
+          <img src="https://framerusercontent.com/images/z2Ga8pLDDIIcBfH1ClklW42msYo.png" alt="OnePlay" class="app-logo">
           <span class="app-label">OnePlay</span>
         </a>
-
       </div></div>
     </div>
 
-    <!-- Music & Other -->
-    <div class="section" data-row="1">
-      <div class="section-label">Hudba &amp; Ostatní</div>
+    <div class="section" data-row="1" data-section="music">
+      <div class="section-label" data-i18n="section.music">Hudba</div>
       <div class="row-scroll"><div class="row">
-
         <a class="tile sm" href="https://open.spotify.com" data-brand="spotify" data-name="Spotify" tabindex="-1">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/2/26/Spotify_logo_with_text.svg"
-               alt="Spotify" class="app-logo">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/2/26/Spotify_logo_with_text.svg" alt="Spotify" class="app-logo">
           <span class="app-label">Spotify</span>
         </a>
-
         <a class="tile sm" href="https://music.youtube.com" data-brand="ytmusic" data-name="YT Music" tabindex="-1">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/6/6a/Youtube_Music_icon.svg"
-               alt="YouTube Music" class="app-logo">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/6/6a/Youtube_Music_icon.svg" alt="YouTube Music" class="app-logo">
           <span class="app-label">YT Music</span>
         </a>
-
-        <a class="tile sm" href="https://www.twitch.tv" data-brand="twitch" data-name="Twitch" tabindex="-1">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/2/26/Twitch_logo.svg"
-               alt="Twitch" class="app-logo">
-          <span class="app-label">Twitch</span>
-        </a>
-
-        <a class="tile sm" href="https://app.plex.tv" data-brand="plex" data-name="Plex" tabindex="-1">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/7/7b/Plex_logo_2022.svg"
-               alt="Plex" class="app-logo">
-          <span class="app-label">Plex</span>
-        </a>
-
-        <a class="tile sm" href="http://localhost:8096" data-brand="jellyfin" data-name="Jellyfin" tabindex="-1">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/8/8e/Jellyfin_logo.svg"
-               alt="Jellyfin" class="app-logo">
-          <span class="app-label">Jellyfin</span>
-        </a>
-
       </div></div>
     </div>
 
-  </div><!-- /content -->
-</div><!-- /shell -->
+    <div class="section" data-row="2" data-section="other">
+      <div class="section-label" data-i18n="section.other">Ostatní</div>
+      <div class="row-scroll"><div class="row">
+        <a class="tile sm" href="https://www.twitch.tv" data-brand="twitch" data-name="Twitch" tabindex="-1">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/2/26/Twitch_logo.svg" alt="Twitch" class="app-logo">
+          <span class="app-label">Twitch</span>
+        </a>
+        <a class="tile sm" href="https://app.plex.tv" data-brand="plex" data-name="Plex" tabindex="-1">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/7/7b/Plex_logo_2022.svg" alt="Plex" class="app-logo">
+          <span class="app-label">Plex</span>
+        </a>
+      </div></div>
+    </div>
 
-<!-- Keyboard hints bar -->
-<div class="hints">
-  <span class="hint"><kbd>←→</kbd> Navigace</span>
-  <span class="hint"><kbd>↑</kbd> Hledat</span>
-  <span class="hint"><kbd>Enter</kbd> Otevřít</span>
-  <span class="hint"><kbd>Alt+F4</kbd> Zavřít okno</span>
-  <span class="hint"><kbd>Alt+Home</kbd> Launcher</span>
+  </div>
 </div>
 
-<!-- Launch feedback toast -->
+<div class="hints">
+    <span class="hint"><kbd>←→</kbd> <span data-i18n="hint.navigation">Navigace</span></span>
+    <span class="hint"><kbd>↑↓</kbd> <span data-i18n="hint.section">Sekce</span></span>
+    <span class="hint"><kbd>/</kbd> <span data-i18n="hint.search">Služba</span></span>
+    <span class="hint"><kbd>S</kbd> <span data-i18n="hint.settings">Nastavení</span></span>
+    <span class="hint"><kbd>Y</kbd> <span data-i18n="hint.recent">Naposledy</span></span>
+    <span class="hint"><kbd>X</kbd> <span data-i18n="hint.home">Domů</span></span>
+    <span class="hint"><kbd>B</kbd> <span data-i18n="hint.back">Zpět</span></span>
+</div>
+
+<!-- Launch toast -->
 <div class="launch-toast" id="launch-toast">
   <div class="launch-toast-title" id="launch-toast-title"></div>
   <div class="launch-toast-sub">Spouštím v novém okně…</div>
 </div>
 
+<!-- ── Backdrop (search / recent panels) ── -->
+<div class="overlay-backdrop" id="overlay-backdrop" hidden></div>
+
+<!-- ── Search panel ── -->
+<div class="panel-card" id="site-search-modal" role="dialog" aria-modal="true" aria-labelledby="site-search-title" hidden>
+  <div class="panel-head">
+    <div>
+      <div class="panel-title" id="site-search-title" data-i18n="search.title">Hledat ve službě</div>
+      <div class="panel-sub" id="site-search-subtitle" data-i18n="search.subtitle">Zkratka otevře hledání pro právě aktivní službu.</div>
+    </div>
+    <button class="panel-btn" type="button" id="site-search-cancel">Zavřít</button>
+  </div>
+  <div class="panel-chip-list" id="site-search-providers"></div>
+  <form class="panel-form" id="site-search-form">
+    <input class="panel-input" type="text" id="site-search-input" placeholder="Co chceš najít?" autocomplete="off" spellcheck="false">
+    <button class="panel-btn primary" type="submit">Hledat</button>
+  </form>
+</div>
+
+<!-- ── Recent panel ── -->
+<div class="panel-card" id="recent-modal" role="dialog" aria-modal="true" aria-labelledby="recent-title" hidden>
+  <div class="panel-head">
+    <div>
+      <div class="panel-title" id="recent-title">Naposledy spuštěné</div>
+      <div class="panel-sub">Rychlý návrat k posledním otevřeným službám.</div>
+    </div>
+    <button class="panel-btn" type="button" id="recent-close">Zavřít</button>
+  </div>
+  <div class="recent-list" id="recent-list"></div>
+</div>
+
+<!-- ═══════════════════════════════════
+     TV SETTINGS OVERLAY
+     Two-column: sidebar + content pane
+═══════════════════════════════════ -->
+<div class="settings-overlay" id="settings-overlay" role="dialog" aria-modal="true" aria-labelledby="settings-heading" hidden>
+
+  <!-- Left sidebar -->
+  <div class="settings-sidebar">
+    <div class="settings-sidebar-header">
+      <div class="settings-sidebar-icon">
+        <span class="material-symbols-outlined">settings</span>
+      </div>
+      <div>
+        <div class="settings-sidebar-title" id="settings-heading" data-i18n="settings.title">Nastavení</div>
+        <div class="settings-sidebar-sub">Media Center</div>
+      </div>
+    </div>
+
+    <nav class="settings-nav" id="settings-nav">
+      <button class="settings-nav-item active" data-pane="language" type="button">
+        <span class="material-symbols-outlined nav-item-icon">language</span>
+        <span class="nav-item-text">
+          <span class="nav-item-label" data-i18n="nav.language">Jazyk</span>
+          <span class="nav-item-desc" id="nav-lang-desc">Čeština</span>
+        </span>
+        <span class="material-symbols-outlined nav-item-arrow">chevron_right</span>
+      </button>
+
+      <button class="settings-nav-item" data-pane="network" type="button">
+        <span class="material-symbols-outlined nav-item-icon">wifi</span>
+        <span class="nav-item-text">
+          <span class="nav-item-label" data-i18n="nav.network">Síť</span>
+          <span class="nav-item-desc" id="nav-net-desc">Online</span>
+        </span>
+        <span class="nav-status-dot ok" id="nav-net-dot"></span>
+        <span class="material-symbols-outlined nav-item-arrow">chevron_right</span>
+      </button>
+
+      <button class="settings-nav-item" data-pane="system" type="button">
+        <span class="material-symbols-outlined nav-item-icon">system_update</span>
+        <span class="nav-item-text">
+          <span class="nav-item-label" data-i18n="nav.system">Systém</span>
+          <span class="nav-item-desc">Aktualizace &amp; launcher</span>
+        </span>
+        <span class="material-symbols-outlined nav-item-arrow">chevron_right</span>
+      </button>
+
+      <button class="settings-nav-item" data-pane="about" type="button">
+        <span class="material-symbols-outlined nav-item-icon">info</span>
+        <span class="nav-item-text">
+          <span class="nav-item-label" data-i18n="nav.about">O aplikaci</span>
+          <span class="nav-item-desc">Verze a informace</span>
+        </span>
+        <span class="material-symbols-outlined nav-item-arrow">chevron_right</span>
+      </button>
+    </nav>
+
+    <div class="settings-sidebar-footer">
+      <button class="settings-close-btn" id="settings-close-btn" type="button">
+        <span class="material-symbols-outlined">arrow_back</span>
+        <span data-i18n="settings.close">Zavřít nastavení</span>
+        <kbd style="margin-left:auto;font-family:inherit;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:2px 8px;font-size:0.7rem;color:rgba(255,255,255,0.5);">Esc</kbd>
+      </button>
+    </div>
+  </div>
+
+  <!-- Right content -->
+  <div class="settings-content" id="settings-content">
+
+    <!-- Language pane -->
+    <div class="settings-pane active" id="pane-language">
+      <div class="settings-pane-title" data-i18n="pane.language.title">Jazyk rozhraní</div>
+      <div class="settings-pane-sub" data-i18n="pane.language.sub">Vyberte jazyk, ve kterém se bude zobrazovat Media Center.</div>
+      <div class="settings-row">
+        <div class="settings-row-label" data-i18n="row.language">Dostupné jazyky</div>
+        <div class="lang-options" id="lang-options"></div>
+      </div>
+    </div>
+
+    <!-- Network pane -->
+    <div class="settings-pane" id="pane-network">
+      <div class="settings-pane-title" data-i18n="pane.network.title">Síť a připojení</div>
+      <div class="settings-pane-sub" data-i18n="pane.network.sub">Stav internetového připojení a baterie.</div>
+      <div class="settings-row">
+        <div class="settings-row-label">Internet</div>
+        <div class="settings-action-list">
+          <div class="settings-action-btn" tabindex="0" id="net-status-row">
+            <span class="material-symbols-outlined action-icon" id="net-action-icon">wifi</span>
+            <span class="action-text">
+              <span class="action-label" id="net-action-label">Připojení</span>
+              <span class="action-desc" id="net-action-desc">Zjišťuji stav…</span>
+            </span>
+            <span class="action-badge" id="net-action-badge">–</span>
+          </div>
+        </div>
+      </div>
+      <div class="settings-row">
+        <div class="settings-row-label">Baterie</div>
+        <div class="settings-action-list">
+          <div class="settings-action-btn" tabindex="0" id="bat-status-row">
+            <span class="material-symbols-outlined action-icon" id="bat-action-icon">battery_full</span>
+            <span class="action-text">
+              <span class="action-label">Baterie</span>
+              <span class="action-desc" id="bat-action-desc">Zjišťuji…</span>
+            </span>
+            <span class="action-badge" id="bat-action-badge">–</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- System pane -->
+    <div class="settings-pane" id="pane-system">
+      <div class="settings-pane-title" data-i18n="pane.system.title">Systém</div>
+      <div class="settings-pane-sub" data-i18n="pane.system.sub">Správa launchers a aktualizace software.</div>
+      <div class="settings-row">
+        <div class="settings-row-label" data-i18n="row.updates">Aktualizace</div>
+        <div class="settings-action-list">
+          <button class="settings-action-btn" type="button" id="settings-update-button">
+            <span class="material-symbols-outlined action-icon">system_update</span>
+            <span class="action-text">
+              <span class="action-label" data-i18n="action.update">Spustit aktualizaci</span>
+              <span class="action-desc" data-i18n="action.update.desc">Stáhne nejnovější verzi přes git a spustí setup skript.</span>
+            </span>
+            <span class="action-badge" id="update-status-badge">–</span>
+          </button>
+        </div>
+      </div>
+      <div class="settings-row">
+        <div class="settings-row-label" data-i18n="row.kiosk">Kiosk</div>
+        <div class="settings-action-list">
+          <button class="settings-action-btn" type="button" onclick="window.close()">
+            <span class="material-symbols-outlined action-icon">exit_to_app</span>
+            <span class="action-text">
+              <span class="action-label" data-i18n="action.exit">Ukončit kiosk</span>
+              <span class="action-desc" data-i18n="action.exit.desc">Zavře toto okno prohlížeče.</span>
+            </span>
+          </button>
+          <button class="settings-action-btn danger" type="button" onclick="location.reload()">
+            <span class="material-symbols-outlined action-icon">refresh</span>
+            <span class="action-text">
+              <span class="action-label" data-i18n="action.reload">Obnovit launcher</span>
+              <span class="action-desc" data-i18n="action.reload.desc">Znovu načte tuto stránku.</span>
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- About pane -->
+    <div class="settings-pane" id="pane-about">
+      <div class="settings-pane-title" data-i18n="pane.about.title">O aplikaci</div>
+      <div class="settings-pane-sub" data-i18n="pane.about.sub">Informace o launchers a prostředí.</div>
+      <div class="settings-row">
+        <div class="settings-row-label">Media Center</div>
+        <div class="about-info-list">
+          <div class="about-info-row">
+            <span class="about-info-key">Verze</span>
+            <span class="about-info-val" id="about-version">–</span>
+          </div>
+          <div class="about-info-row">
+            <span class="about-info-key">Naposledy aktualizováno</span>
+            <span class="about-info-val" id="about-modified">–</span>
+          </div>
+          <div class="about-info-row">
+            <span class="about-info-key">Prohlížeč</span>
+            <span class="about-info-val" id="about-browser">–</span>
+          </div>
+          <div class="about-info-row">
+            <span class="about-info-key">Platforma</span>
+            <span class="about-info-val" id="about-platform">–</span>
+          </div>
+          <div class="about-info-row">
+            <span class="about-info-key">Rozlišení</span>
+            <span class="about-info-val" id="about-resolution">–</span>
+          </div>
+          <div class="about-info-row">
+            <span class="about-info-key">Jazyk systému</span>
+            <span class="about-info-val" id="about-locale">–</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 <script>
-  // ── Clock, date & greeting ──────────────────────────────────────────────────
   const DAYS   = ['neděle','pondělí','úterý','středa','čtvrtek','pátek','sobota'];
   const MONTHS = ['ledna','února','března','dubna','května','června',
                   'července','srpna','září','října','listopadu','prosince'];
+  const RECENT_STORAGE_KEY = 'media-center-recent-apps';
+  const TAB_FILTERS = ['all', 'streaming', 'music', 'other'];
+  const TAB_AMBIENTS = ['default', 'netflix', 'spotify', 'plex'];
 
+  const BRAND_GLOWS = {
+    default: { primary: '80, 90, 110',   secondary: '124, 134, 156' },
+    search:  { primary: '92, 124, 250',  secondary: '157, 178, 255' },
+    netflix: { primary: '229, 9, 20',    secondary: '255, 96, 110'  },
+    youtube: { primary: '255, 0, 0',     secondary: '255, 124, 124' },
+    disney:  { primary: '17, 60, 207',   secondary: '117, 162, 255' },
+    max:     { primary: '89, 55, 203',   secondary: '172, 149, 255' },
+    prime:   { primary: '0, 168, 225',   secondary: '122, 219, 255' },
+    oneplay: { primary: '255, 87, 34',   secondary: '255, 170, 130' },
+    spotify: { primary: '30, 215, 96',   secondary: '138, 255, 188' },
+    ytmusic: { primary: '255, 0, 0',     secondary: '255, 134, 134' },
+    twitch:  { primary: '145, 70, 255',  secondary: '214, 186, 255' },
+    plex:    { primary: '229, 160, 13',  secondary: '255, 220, 124' }
+  };
+
+  const siteSearchFallback = (domain, query) =>
+    `https://www.google.com/search?q=${encodeURIComponent(`site:${domain} ${query}`)}`;
+
+  const SEARCH_PROVIDERS = {
+    netflix: { label: 'Netflix',       buildUrl: q => `https://www.netflix.com/search?q=${encodeURIComponent(q)}` },
+    youtube: { label: 'YouTube',       buildUrl: q => `https://www.youtube.com/results?search_query=${encodeURIComponent(q)}` },
+    disney:  { label: 'Disney+',       buildUrl: q => siteSearchFallback('disneyplus.com', q) },
+    max:     { label: 'Max',           buildUrl: q => siteSearchFallback('max.com', q) },
+    prime:   { label: 'Prime Video',   buildUrl: q => siteSearchFallback('primevideo.com', q) },
+    oneplay: { label: 'OnePlay',       buildUrl: q => siteSearchFallback('oneplay.cz', q) },
+    spotify: { label: 'Spotify',       buildUrl: q => `https://open.spotify.com/search/${encodeURIComponent(q)}` },
+    ytmusic: { label: 'YouTube Music', buildUrl: q => `https://music.youtube.com/search?q=${encodeURIComponent(q)}` },
+    twitch:  { label: 'Twitch',        buildUrl: q => `https://www.twitch.tv/search?term=${encodeURIComponent(q)}` },
+    plex:    { label: 'Plex',          buildUrl: q => siteSearchFallback('plex.tv', q) }
+  };
+
+  // ── Element refs ──────────────────────────────────
+  const ambient          = document.getElementById('ambient');
+  const navTabs          = Array.from(document.querySelectorAll('.nav-tab'));
+  const sections         = Array.from(document.querySelectorAll('[data-row]'));
+  const rows             = sections.map(s => Array.from(s.querySelectorAll('.tile')));
+  const allTiles         = rows.flat();
+  const searchInput      = document.getElementById('search-input');
+  const searchForm       = document.getElementById('search-form');
+  const launchToast      = document.getElementById('launch-toast');
+  const launchToastTitle = document.getElementById('launch-toast-title');
+  const overlayBackdrop  = document.getElementById('overlay-backdrop');
+  const siteSearchModal  = document.getElementById('site-search-modal');
+  const siteSearchForm   = document.getElementById('site-search-form');
+  const siteSearchInput  = document.getElementById('site-search-input');
+  const siteSearchSubtitle   = document.getElementById('site-search-subtitle');
+  const siteSearchProviders  = document.getElementById('site-search-providers');
+  const recentModal      = document.getElementById('recent-modal');
+  const recentList       = document.getElementById('recent-list');
+  const recentClose      = document.getElementById('recent-close');
+  const siteSearchCancel = document.getElementById('site-search-cancel');
+  const networkChip      = document.getElementById('status-network');
+  const batteryChip      = document.getElementById('status-battery');
+  const updatesChip      = document.getElementById('status-updates');
+  const networkStatus    = document.getElementById('network-status');
+  const batteryStatus    = document.getElementById('battery-status');
+  const updatesStatus    = document.getElementById('updates-status');
+
+  // TV Settings refs
+  const settingsOverlay  = document.getElementById('settings-overlay');
+  const settingsButton   = document.getElementById('settings-button');
+  const settingsCloseBtn = document.getElementById('settings-close-btn');
+  const settingsNavItems = Array.from(document.querySelectorAll('.settings-nav-item'));
+  const settingsUpdateBtn= document.getElementById('settings-update-button');
+  const langOptions      = document.getElementById('lang-options');
+  const navLangDesc      = document.getElementById('nav-lang-desc');
+  const navNetDot        = document.getElementById('nav-net-dot');
+  const navNetDesc       = document.getElementById('nav-net-desc');
+  const netStatusRow     = document.getElementById('net-status-row');
+  const batStatusRow     = document.getElementById('bat-status-row');
+
+  const providerKeys = Array.from(new Set(allTiles.map(t => t.dataset.brand))).filter(k => SEARCH_PROVIDERS[k]);
+
+  let toastTimer       = null;
+  let activeTabIdx     = 0;
+  let activeRow        = 0;
+  let activeCol        = 0;
+  let searchFocused    = false;
+  let tabFocused       = false;
+  let activeOverlay    = null;
+  let overlayReturnFocus = null;
+  let selectedProvider = providerKeys[0] || 'netflix';
+  let recentApps       = loadRecentApps();
+  let recentFocusIndex = 0;
+  let gpLoop = null;
+  let lastGpTime = 0;
+  let batteryManager = null;
+  const GP_REPEAT = 220;
+
+  // ── Settings panel state ──
+  let settingsNavFocus  = 0;       // which sidebar item is active
+  let settingsPaneFocus = 'sidebar'; // 'sidebar' | 'content'
+  const PANES = ['language', 'network', 'system', 'about'];
+
+  // ── Clock ─────────────────────────────────────────
   function updateClock() {
     const now = new Date();
     const h = String(now.getHours()).padStart(2, '0');
@@ -517,212 +1616,811 @@
     document.getElementById('clock').textContent = `${h}:${m}`;
     document.getElementById('date-line').textContent =
       `${DAYS[now.getDay()]}, ${now.getDate()}. ${MONTHS[now.getMonth()]}`;
-
-    const hour = now.getHours();
+    const hr = now.getHours();
     document.getElementById('greeting').textContent =
-      hour >= 5 && hour < 12 ? 'Dobré ráno'
-      : hour >= 12 && hour < 18 ? 'Dobré odpoledne'
+      hr >= 5 && hr < 12 ? 'Dobré ráno'
+      : hr >= 12 && hr < 18 ? 'Dobré odpoledne'
       : 'Dobrý večer';
   }
 
-  updateClock();
-  setInterval(updateClock, 10000);
-
-  // ── App launcher (new window so launcher stays alive) ──────────────────────
-  const launchToast      = document.getElementById('launch-toast');
-  const launchToastTitle = document.getElementById('launch-toast-title');
-  let toastTimer = null;
-
-  function launchApp(url, name) {
-    launchToastTitle.textContent = name;
-    launchToast.classList.add('visible');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => launchToast.classList.remove('visible'), 2200);
-    window.open(url, '_blank');
+  function setAmbient(brand = 'default') {
+    const p = BRAND_GLOWS[brand] || BRAND_GLOWS.default;
+    ambient.style.setProperty('--ambient-primary', p.primary);
+    ambient.style.setProperty('--ambient-secondary', p.secondary);
   }
 
-  // ── Navigation state ────────────────────────────────────────────────────────
-  const ambient     = document.getElementById('ambient');
-  const searchInput = document.getElementById('search-input');
-  const searchForm  = document.getElementById('search-form');
+  function getCurrentTile()  { return rows[activeRow]?.[activeCol] || null; }
+  function getCurrentBrand() { return getCurrentTile()?.dataset.brand || TAB_AMBIENTS[activeTabIdx] || 'default'; }
 
-  // Build 2-D tile matrix: rows[rowIndex] = [tile, tile, ...]
-  const rows = Array.from(document.querySelectorAll('[data-row]')).map(sec =>
-    Array.from(sec.querySelectorAll('.tile'))
-  );
-
-  let activeRow = 0;
-  let activeCol = 0;
-  let searchFocused = false;
-
-  // ── Ambient helper ──────────────────────────────────────────────────────────
-  function setAmbient(brand) {
-    ambient.style.setProperty(
-      '--active-color',
-      brand ? `var(--color-${brand})` : `var(--color-default)`
-    );
+  function visibleRowIndices() {
+    return sections
+      .map((s, i) => ({ s, i }))
+      .filter(({ s }) => !s.classList.contains('is-hidden'))
+      .map(({ i }) => i);
   }
 
-  // ── Focus helpers ───────────────────────────────────────────────────────────
-  function focusTile(row, col) {
-    if (row < 0 || row >= rows.length) return;
-    const r = rows[row];
-    if (!r || !r.length) return;
-    col = Math.max(0, Math.min(col, r.length - 1));
+  function isRowVisible(i) { return Boolean(sections[i] && !sections[i].classList.contains('is-hidden')); }
+  function firstVisibleRowIndex() { return visibleRowIndices()[0] ?? 0; }
 
-    activeRow = row;
-    activeCol = col;
-    searchFocused = false;
+  function nextVisibleRowIndex(current, delta) {
+    const v = visibleRowIndices();
+    const pos = v.indexOf(current);
+    if (pos === -1) return v[0] ?? current;
+    return v[Math.max(0, Math.min(pos + delta, v.length - 1))];
+  }
+
+  function syncActivePosition() {
+    if (!isRowVisible(activeRow)) {
+      activeRow = firstVisibleRowIndex();
+      activeCol = 0;
+    }
+    const row = rows[activeRow] || [];
+    activeCol = Math.max(0, Math.min(activeCol, Math.max(row.length - 1, 0)));
+  }
+
+  function focusTile(row, col, opts = {}) {
+    if (!isRowVisible(row)) row = firstVisibleRowIndex();
+    const rowTiles = rows[row];
+    if (!rowTiles || !rowTiles.length) return;
+    col = Math.max(0, Math.min(col, rowTiles.length - 1));
+    activeRow = row; activeCol = col;
+    searchFocused = false; tabFocused = false;
     searchForm.classList.remove('tv-focus');
-
-    const tile = r[col];
+    const tile = rowTiles[col];
     tile.focus({ preventScroll: true });
-    tile.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    if (opts.scroll !== false) tile.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     setAmbient(tile.dataset.brand);
   }
 
   function focusSearch() {
-    searchFocused = true;
+    searchFocused = true; tabFocused = false;
     searchForm.classList.add('tv-focus');
     searchInput.focus();
     setAmbient('search');
   }
 
-  // ── Keyboard navigation ─────────────────────────────────────────────────────
-  document.addEventListener('keydown', e => {
+  function focusTab(idx) {
+    activeTabIdx = Math.max(0, Math.min(idx, navTabs.length - 1));
+    tabFocused = true; searchFocused = false;
+    searchForm.classList.remove('tv-focus');
+    navTabs[activeTabIdx].focus();
+    setAmbient(TAB_AMBIENTS[activeTabIdx] || 'default');
+  }
+
+  function applyTabFilter(opts = {}) {
+    const filter = TAB_FILTERS[activeTabIdx];
+    sections.forEach(s => {
+      s.classList.toggle('is-hidden', filter !== 'all' && s.dataset.section !== filter);
+    });
+    syncActivePosition();
+    if (opts.focusTile) focusTile(activeRow, activeCol);
+    else if (!tabFocused && !searchFocused && !activeOverlay) setAmbient(getCurrentBrand());
+  }
+
+  function setActiveTab(idx, opts = {}) {
+    activeTabIdx = Math.max(0, Math.min(idx, navTabs.length - 1));
+    navTabs.forEach((t, i) => t.classList.toggle('active', i === activeTabIdx));
+    applyTabFilter(opts);
+  }
+
+  function goHome() {
+    closeOverlay({ restoreFocus: false });
+    closeSettings();
+    setActiveTab(0);
+    focusTile(firstVisibleRowIndex(), 0);
+  }
+
+  // ── Recent ────────────────────────────────────────
+  function loadRecentApps() {
+    try { return JSON.parse(localStorage.getItem(RECENT_STORAGE_KEY) || '[]'); } catch { return []; }
+  }
+
+  function saveRecentApps() { localStorage.setItem(RECENT_STORAGE_KEY, JSON.stringify(recentApps)); }
+
+  function formatRelativeTime(ts) {
+    const min = Math.max(1, Math.round((Date.now() - ts) / 60000));
+    if (min < 60) return `před ${min} min`;
+    const h = Math.round(min / 60);
+    if (h < 24) return `před ${h} h`;
+    return `před ${Math.round(h / 24)} dny`;
+  }
+
+  function escapeHtml(v) {
+    return String(v)
+      .replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
+      .replaceAll('"','&quot;').replaceAll("'",'&#39;');
+  }
+
+  function rememberRecentApp(entry) {
+    recentApps = [entry, ...recentApps.filter(x => x.url !== entry.url)].slice(0, 8);
+    saveRecentApps();
+    renderRecentList();
+  }
+
+  function renderRecentList() {
+    const strings = LANGUAGES[activeLanguage]?.strings || LANGUAGES.cs.strings;
+    if (!recentApps.length) {
+      recentList.innerHTML = `<div class="recent-empty">${strings['recent.empty']}</div>`;
+      return;
+    }
+    recentList.innerHTML = recentApps.map(item => {
+      const su = escapeHtml(item.url), sb = escapeHtml(item.brand || 'default'), sn = escapeHtml(item.name);
+      return `<button class="recent-item" type="button" data-url="${su}" data-brand="${sb}" data-name="${sn}">
+        <span class="recent-swatch" style="--swatch-color:var(--color-${sb})"></span>
+        <span class="recent-copy">
+          <span class="recent-title">${sn}</span>
+          <span class="recent-sub">${su}</span>
+        </span>
+        <span class="recent-time">${formatRelativeTime(item.timestamp)}</span>
+      </button>`;
+    }).join('');
+    Array.from(recentList.querySelectorAll('.recent-item')).forEach(b => {
+      b.addEventListener('focus', () => setAmbient(b.dataset.brand || 'default'));
+      b.addEventListener('click', () => {
+        closeOverlay({ restoreFocus: false });
+        launchApp(b.dataset.url, b.dataset.name, b.dataset.brand || 'default');
+      });
+    });
+  }
+
+  function focusRecentItem(idx) {
+    const items = Array.from(recentList.querySelectorAll('.recent-item'));
+    if (!items.length) return;
+    recentFocusIndex = Math.max(0, Math.min(idx, items.length - 1));
+    items[recentFocusIndex].focus();
+  }
+
+  // ── Generic panel helpers ─────────────────────────
+  function showPanel(panel) {
+    overlayBackdrop.hidden = false;
+    panel.hidden = false;
+    requestAnimationFrame(() => {
+      overlayBackdrop.classList.add('visible');
+      panel.classList.add('visible');
+    });
+  }
+
+  function hidePanel(panel) {
+    overlayBackdrop.classList.remove('visible');
+    panel.classList.remove('visible');
+    overlayBackdrop.hidden = true;
+    panel.hidden = true;
+  }
+
+  function closeOverlay(opts = {}) {
+    if (!activeOverlay) return;
+    const panel = activeOverlay === 'search' ? siteSearchModal : recentModal;
+    hidePanel(panel);
+    activeOverlay = null;
+    if (opts.restoreFocus !== false && overlayReturnFocus instanceof HTMLElement) overlayReturnFocus.focus();
+    overlayReturnFocus = null;
+    if (!searchFocused && !tabFocused) setAmbient(getCurrentBrand());
+  }
+
+  // ── Site search ───────────────────────────────────
+  function setSelectedProvider(key, opts = {}) {
+    if (!SEARCH_PROVIDERS[key]) return;
+    selectedProvider = key;
+    Array.from(siteSearchProviders.querySelectorAll('.panel-chip')).forEach(c => {
+      c.classList.toggle('active', c.dataset.provider === key);
+    });
+    siteSearchSubtitle.textContent = `Hledání poběží přímo pro službu ${SEARCH_PROVIDERS[key].label}.`;
+    siteSearchInput.placeholder = `Co chceš najít na ${SEARCH_PROVIDERS[key].label}?`;
+    setAmbient(key);
+    if (opts.focusChip) siteSearchProviders.querySelector(`[data-provider="${key}"]`)?.focus();
+  }
+
+  function renderProviderChips() {
+    siteSearchProviders.innerHTML = providerKeys.map(k =>
+      `<button class="panel-chip" type="button" data-provider="${k}">${SEARCH_PROVIDERS[k].label}</button>`
+    ).join('');
+    Array.from(siteSearchProviders.querySelectorAll('.panel-chip')).forEach(c => {
+      c.addEventListener('click', () => { setSelectedProvider(c.dataset.provider); siteSearchInput.focus(); });
+      c.addEventListener('focus', () => setAmbient(c.dataset.provider));
+    });
+  }
+
+  function openSiteSearchPrompt(preferredBrand = getCurrentBrand()) {
+    overlayReturnFocus = document.activeElement;
+    activeOverlay = 'search';
+    searchFocused = false; tabFocused = false;
+    searchForm.classList.remove('tv-focus');
+    renderProviderChips();
+    setSelectedProvider(SEARCH_PROVIDERS[preferredBrand] ? preferredBrand : (providerKeys[0] || 'netflix'));
+    siteSearchInput.value = '';
+    showPanel(siteSearchModal);
+    siteSearchInput.focus();
+  }
+
+  function toggleRecentOverlay() {
+    if (activeOverlay === 'recent') { closeOverlay(); return; }
+    overlayReturnFocus = document.activeElement;
+    activeOverlay = 'recent';
+    searchFocused = false; tabFocused = false;
+    searchForm.classList.remove('tv-focus');
+    renderRecentList();
+    showPanel(recentModal);
+    requestAnimationFrame(() => focusRecentItem(0));
+  }
+
+  // ── Launch ────────────────────────────────────────
+  function launchApp(url, name, brand = getCurrentBrand()) {
+    launchToastTitle.textContent = name;
+    launchToast.classList.add('visible');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => launchToast.classList.remove('visible'), 2200);
+    rememberRecentApp({ url, name, brand, timestamp: Date.now() });
+    window.open(url, '_blank', 'noopener');
+  }
+
+  function handleBackAction() {
+    if (activeOverlay) { closeOverlay(); return; }
+    if (settingsOverlay.classList.contains('visible')) { closeSettings(); return; }
+    if (searchFocused) { searchInput.blur(); focusTile(activeRow, activeCol); return; }
+    if (tabFocused) { focusSearch(); return; }
+    if (activeTabIdx !== 0) { setActiveTab(0, { focusTile: true }); return; }
+    if (window.history.length > 1) { window.history.back(); return; }
+    focusSearch();
+  }
+
+  // ── Status chips ──────────────────────────────────
+  function setStatusIcon(chip, icon) {
+    const el = chip.querySelector('.status-icon');
+    if (el) el.textContent = icon;
+  }
+
+  function updateNetworkStatus() {
+    const online = navigator.onLine;
+    networkChip.dataset.state = online ? 'ok' : 'bad';
+    networkStatus.textContent = online ? 'Online' : 'Offline';
+    networkChip.setAttribute('aria-label', online ? 'Síť online' : 'Síť offline');
+    setStatusIcon(networkChip, online ? 'wifi' : 'portable_wifi_off');
+    // Update sidebar dot + desc
+    navNetDot.className = `nav-status-dot ${online ? 'ok' : 'bad'}`;
+    navNetDesc.textContent = online ? 'Online' : 'Offline';
+    // Update network pane
+    const badge = document.getElementById('net-action-badge');
+    const desc  = document.getElementById('net-action-desc');
+    const icon  = document.getElementById('net-action-icon');
+    if (badge) {
+      badge.textContent = online ? 'Online' : 'Offline';
+      badge.className   = `action-badge ${online ? 'ok' : 'bad'}`;
+    }
+    if (desc)  desc.textContent = online ? 'Připojení k internetu funguje.' : 'Žádné internetové připojení.';
+    if (icon)  icon.textContent = online ? 'wifi' : 'portable_wifi_off';
+  }
+
+  function updateBatteryStatus() {
+    const badge = document.getElementById('bat-action-badge');
+    const desc  = document.getElementById('bat-action-desc');
+    const icon  = document.getElementById('bat-action-icon');
+
+    if (!batteryManager) {
+      batteryChip.dataset.state = 'warn';
+      batteryStatus.textContent = 'Nepodporováno';
+      setStatusIcon(batteryChip, 'battery_unknown');
+      if (badge) { badge.textContent = 'N/A'; badge.className = 'action-badge warn'; }
+      if (desc)  desc.textContent = 'Stav baterie není k dispozici.';
+      return;
+    }
+    const pct     = Math.round(batteryManager.level * 100);
+    const charging = batteryManager.charging;
+    batteryStatus.textContent = charging ? `${pct}% • nabíjení` : `${pct}%`;
+    if (desc) desc.textContent = charging ? `Nabíjí se — ${pct} %` : `${pct} % kapacity`;
+    if (badge) {
+      badge.textContent = `${pct}%`;
+      badge.className   = `action-badge ${charging ? 'ok' : pct > 60 ? 'ok' : pct > 25 ? 'warn' : 'bad'}`;
+    }
+
+    let iconName = 'battery_full';
+    if (charging) iconName = 'battery_charging_full';
+    else if (pct <= 25) iconName = 'battery_alert';
+    else if (pct <= 60) iconName = 'battery_3_bar';
+
+    batteryChip.dataset.state = charging ? 'ok' : pct > 60 ? 'ok' : pct > 25 ? 'warn' : 'bad';
+    setStatusIcon(batteryChip, iconName);
+    if (icon) icon.textContent = iconName;
+  }
+
+  async function initBatteryStatus() {
+    if (!navigator.getBattery) { updateBatteryStatus(); return; }
+    try {
+      batteryManager = await navigator.getBattery();
+      updateBatteryStatus();
+      batteryManager.addEventListener('levelchange', updateBatteryStatus);
+      batteryManager.addEventListener('chargingchange', updateBatteryStatus);
+    } catch { updateBatteryStatus(); }
+  }
+
+  function updateUpdatesStatus() {
+    const modified = new Date(document.lastModified || Date.now());
+    const sameDay  = modified.toDateString() === new Date().toDateString();
+    updatesChip.dataset.state = 'ok';
+    updatesStatus.textContent = sameDay
+      ? 'Launcher dnes'
+      : `Launcher ${modified.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' })}`;
+    setStatusIcon(updatesChip, sameDay ? 'update' : 'history');
+
+    const badge = document.getElementById('update-status-badge');
+    if (badge) {
+      badge.textContent = sameDay ? 'Aktuální' : modified.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' });
+      badge.className   = 'action-badge ok';
+    }
+  }
+
+  function populateAboutPane() {
+    const ua = navigator.userAgent;
+    let browser = 'Neznámý';
+    if (/Chromium/i.test(ua))        browser = 'Chromium';
+    else if (/Chrome/i.test(ua))     browser = 'Chrome';
+    else if (/Firefox/i.test(ua))    browser = 'Firefox';
+    const modified = new Date(document.lastModified || Date.now());
+
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    set('about-version',    'Media Center 2.0');
+    set('about-modified',   modified.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'long', year: 'numeric' }));
+    set('about-browser',    browser);
+    set('about-platform',   navigator.platform || navigator.userAgentData?.platform || '–');
+    set('about-resolution', `${window.screen.width} × ${window.screen.height}`);
+    set('about-locale',     navigator.language || '–');
+  }
+
+  // ── TV Settings panel ─────────────────────────────
+  function openSettings() {
+    settingsOverlay.hidden = false;
+    settingsOverlay.removeAttribute('hidden');
+    requestAnimationFrame(() => settingsOverlay.classList.add('visible'));
+    activeOverlay = 'settings';
+    settingsPaneFocus = 'sidebar';
+    settingsNavFocus  = 0;
+    activateSettingsPane(PANES[0]);
+    focusSettingsNav(0);
+    populateAboutPane();
+    updateNetworkStatus();
+    updateBatteryStatus();
+    updateUpdatesStatus();
+  }
+
+  function closeSettings() {
+    settingsOverlay.classList.remove('visible');
+    setTimeout(() => {
+      settingsOverlay.hidden = true;
+    }, 300);
+    activeOverlay = null;
+    if (overlayReturnFocus instanceof HTMLElement) overlayReturnFocus.focus();
+    overlayReturnFocus = null;
+    setAmbient(getCurrentBrand());
+  }
+
+  function toggleSettings() {
+    if (activeOverlay === 'settings') closeSettings();
+    else { overlayReturnFocus = document.activeElement; openSettings(); }
+  }
+
+  function activateSettingsPane(paneName) {
+    settingsNavItems.forEach((item, i) => {
+      const match = item.dataset.pane === paneName;
+      item.classList.toggle('active', match);
+      if (match) settingsNavFocus = i;
+    });
+    document.querySelectorAll('.settings-pane').forEach(p => {
+      p.classList.toggle('active', p.id === `pane-${paneName}`);
+    });
+    // scroll content to top
+    const content = document.getElementById('settings-content');
+    if (content) content.scrollTop = 0;
+  }
+
+  function focusSettingsNav(idx) {
+    settingsNavFocus = Math.max(0, Math.min(idx, settingsNavItems.length - 1));
+    settingsPaneFocus = 'sidebar';
+    settingsNavItems[settingsNavFocus].focus();
+    activateSettingsPane(PANES[settingsNavFocus]);
+  }
+
+  function focusSettingsContent() {
+    settingsPaneFocus = 'content';
+    const pane  = document.querySelector('.settings-pane.active');
+    if (!pane) return;
+    const first = pane.querySelector('button, [tabindex="0"], input');
+    if (first) first.focus();
+  }
+
+  function handleSettingsKeys(event) {
+    const key = event.key;
+
+    if (['Escape', 'BrowserBack', 'GoBack'].includes(key)) {
+      event.preventDefault();
+      if (settingsPaneFocus === 'content') {
+        settingsPaneFocus = 'sidebar';
+        focusSettingsNav(settingsNavFocus);
+      } else {
+        closeSettings();
+      }
+      return;
+    }
+
+    if (settingsPaneFocus === 'sidebar') {
+      if (key === 'ArrowDown') {
+        event.preventDefault();
+        focusSettingsNav(settingsNavFocus + 1);
+      } else if (key === 'ArrowUp') {
+        event.preventDefault();
+        focusSettingsNav(settingsNavFocus - 1);
+      } else if (key === 'ArrowRight' || key === 'Enter') {
+        event.preventDefault();
+        focusSettingsContent();
+      }
+      return;
+    }
+
+    // In content — ArrowLeft returns to sidebar
+    if (settingsPaneFocus === 'content' && key === 'ArrowLeft') {
+      event.preventDefault();
+      focusSettingsNav(settingsNavFocus);
+    }
+  }
+
+  // ── Language ──────────────────────────────────────
+  const LANGUAGE_KEY = 'media-center-language';
+  const LANGUAGES = {
+    cs: {
+      label: 'Čeština', flag: '🇨🇿',
+      strings: {
+        'tab.home': 'Domů', 'tab.streaming': 'Streaming', 'tab.music': 'Hudba', 'tab.other': 'Ostatní',
+        'hint.navigation': 'Navigace', 'hint.section': 'Sekce', 'hint.search': 'Služba',
+        'hint.settings': 'Nastavení', 'hint.recent': 'Naposledy', 'hint.home': 'Domů', 'hint.back': 'Zpět',
+        'settings.title': 'Nastavení', 'settings.subtitle': 'Správa jazyka a aktualizací.', 'settings.close': 'Zavřít nastavení',
+        'settings.update': 'Spustit aktualizaci',
+        'search.title': 'Hledat ve službě', 'search.subtitle': 'Zkratka otevře hledání pro právě aktivní službu.',
+        'search.placeholder': 'Hledat na webu…',
+        'recent.empty': 'Ještě nic spuštěného — zkus nejdřív otevřít pár služeb.',
+        'section.streaming': 'Streaming', 'section.music': 'Hudba', 'section.other': 'Ostatní',
+        'nav.language': 'Jazyk', 'nav.network': 'Síť', 'nav.system': 'Systém', 'nav.about': 'O aplikaci',
+        'pane.language.title': 'Jazyk rozhraní', 'pane.language.sub': 'Vyberte jazyk, ve kterém se bude zobrazovat Media Center.',
+        'pane.network.title': 'Síť a připojení', 'pane.network.sub': 'Stav internetového připojení a baterie.',
+        'pane.system.title': 'Systém', 'pane.system.sub': 'Správa launcheru a aktualizace software.',
+        'pane.about.title': 'O aplikaci', 'pane.about.sub': 'Informace o launcheru a prostředí.',
+        'row.language': 'Dostupné jazyky', 'row.updates': 'Aktualizace', 'row.kiosk': 'Kiosk',
+        'action.update': 'Spustit aktualizaci', 'action.update.desc': 'Stáhne nejnovější verzi přes git a spustí setup skript.',
+        'action.exit': 'Ukončit kiosk', 'action.exit.desc': 'Zavře toto okno prohlížeče.',
+        'action.reload': 'Obnovit launcher', 'action.reload.desc': 'Znovu načte tuto stránku.'
+      }
+    },
+    en: {
+      label: 'English', flag: '🇬🇧',
+      strings: {
+        'tab.home': 'Home', 'tab.streaming': 'Streaming', 'tab.music': 'Music', 'tab.other': 'Other',
+        'hint.navigation': 'Navigation', 'hint.section': 'Rows', 'hint.search': 'Search',
+        'hint.settings': 'Settings', 'hint.recent': 'Recent', 'hint.home': 'Home', 'hint.back': 'Back',
+        'settings.title': 'Settings', 'settings.subtitle': 'Language and update control.', 'settings.close': 'Close settings',
+        'settings.update': 'Run update',
+        'search.title': 'Search service', 'search.subtitle': 'Shortcut opens search for the active service.',
+        'search.placeholder': 'Search the web…',
+        'recent.empty': 'No apps launched yet — try opening a few services first.',
+        'section.streaming': 'Streaming', 'section.music': 'Music', 'section.other': 'Other',
+        'nav.language': 'Language', 'nav.network': 'Network', 'nav.system': 'System', 'nav.about': 'About',
+        'pane.language.title': 'Interface language', 'pane.language.sub': 'Choose the language for Media Center.',
+        'pane.network.title': 'Network & connection', 'pane.network.sub': 'Internet and battery status.',
+        'pane.system.title': 'System', 'pane.system.sub': 'Launcher management and software updates.',
+        'pane.about.title': 'About', 'pane.about.sub': 'Launcher and environment information.',
+        'row.language': 'Available languages', 'row.updates': 'Updates', 'row.kiosk': 'Kiosk',
+        'action.update': 'Run update', 'action.update.desc': 'Downloads the latest version via git and runs the setup script.',
+        'action.exit': 'Exit kiosk', 'action.exit.desc': 'Closes this browser window.',
+        'action.reload': 'Reload launcher', 'action.reload.desc': 'Reloads this page.'
+      }
+    }
+  };
+  let activeLanguage = 'cs';
+
+  function translatePage() {
+    const strings = LANGUAGES[activeLanguage]?.strings || LANGUAGES.cs.strings;
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const k = el.dataset.i18n;
+      if (strings[k]) el.textContent = strings[k];
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+      const k = el.dataset.i18nPlaceholder;
+      if (strings[k]) el.placeholder = strings[k];
+    });
+  }
+
+  function getSavedLanguage() {
+    const v = localStorage.getItem(LANGUAGE_KEY);
+    return v && LANGUAGES[v] ? v : 'cs';
+  }
+
+  function renderLangOptions() {
+    langOptions.innerHTML = Object.entries(LANGUAGES).map(([code, lang]) =>
+      `<button class="lang-btn${code === activeLanguage ? ' active' : ''}" type="button" data-lang="${code}">
+        <span class="lang-flag">${lang.flag}</span>
+        <span class="lang-name">${lang.label}</span>
+        <span class="material-symbols-outlined lang-check">check_circle</span>
+      </button>`
+    ).join('');
+    Array.from(langOptions.querySelectorAll('.lang-btn')).forEach(btn => {
+      btn.addEventListener('click', () => setLanguage(btn.dataset.lang));
+    });
+  }
+
+  function setLanguage(lang) {
+    activeLanguage = LANGUAGES[lang] ? lang : 'cs';
+    localStorage.setItem(LANGUAGE_KEY, activeLanguage);
+    document.documentElement.lang = activeLanguage;
+    translatePage();
+    renderLangOptions();
+    navLangDesc.textContent = LANGUAGES[activeLanguage].label;
+  }
+
+  // ── Updater ───────────────────────────────────────
+  async function runUpdater() {
+    launchToastTitle.textContent = 'Aktualizace spuštěna…';
+    launchToast.classList.add('visible');
+    try {
+      const res = await fetch('http://127.0.0.1:8765/update', { method: 'POST' });
+      const result = await res.json();
+      launchToastTitle.textContent = result.success ? 'Aktualizace dokončena' : 'Aktualizace selhala';
+    } catch {
+      launchToastTitle.textContent = 'Updater není dostupný';
+    }
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => launchToast.classList.remove('visible'), 3200);
+    updateUpdatesStatus();
+  }
+
+  // ── Keyboard ──────────────────────────────────────
+  function isTypingField(el = document.activeElement) {
+    return Boolean(el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable));
+  }
+
+  function handleSearchOverlayKeys(event) {
+    const chips = Array.from(siteSearchProviders.querySelectorAll('.panel-chip'));
+    const idx   = chips.indexOf(document.activeElement);
+    if (['Escape', 'BrowserBack', 'GoBack'].includes(event.key)) {
+      event.preventDefault(); closeOverlay(); return;
+    }
+    if (document.activeElement === siteSearchInput && event.key === 'ArrowUp' && chips.length) {
+      event.preventDefault();
+      chips.find(c => c.dataset.provider === selectedProvider)?.focus(); return;
+    }
+    if (idx !== -1) {
+      if (event.key === 'ArrowRight') { event.preventDefault(); chips[Math.min(idx + 1, chips.length - 1)]?.focus(); }
+      else if (event.key === 'ArrowLeft') { event.preventDefault(); chips[Math.max(idx - 1, 0)]?.focus(); }
+      else if (event.key === 'ArrowDown') { event.preventDefault(); siteSearchInput.focus(); }
+      else if (event.key === 'Enter') { event.preventDefault(); setSelectedProvider(chips[idx].dataset.provider); siteSearchInput.focus(); }
+    }
+  }
+
+  function handleRecentOverlayKeys(event) {
+    const items = Array.from(recentList.querySelectorAll('.recent-item'));
+    if (['Escape', 'BrowserBack', 'GoBack', 'Backspace'].includes(event.key)) {
+      event.preventDefault(); closeOverlay(); return;
+    }
+    if (!items.length) return;
+    if (event.key === 'ArrowDown' || event.key === 'ArrowRight') { event.preventDefault(); focusRecentItem(recentFocusIndex + 1); }
+    else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') { event.preventDefault(); focusRecentItem(recentFocusIndex - 1); }
+    else if (event.key === 'Home') { event.preventDefault(); focusRecentItem(0); }
+    else if (event.key === 'End')  { event.preventDefault(); focusRecentItem(items.length - 1); }
+  }
+
+  document.addEventListener('keydown', event => {
+    if (activeOverlay === 'settings') { handleSettingsKeys(event); return; }
+    if (activeOverlay === 'search')   { handleSearchOverlayKeys(event); return; }
+    if (activeOverlay === 'recent')   { handleRecentOverlayKeys(event); return; }
+
+    const typing = isTypingField();
     const inSearch = searchFocused || document.activeElement === searchInput;
-    const allTiles = rows.flat();
     const inTile   = allTiles.includes(document.activeElement);
+    const inTab    = navTabs.includes(document.activeElement);
+
+    if (!typing && (event.key === '/' || (event.ctrlKey && event.key.toLowerCase() === 'k') || event.key === 'BrowserSearch')) {
+      event.preventDefault(); openSiteSearchPrompt(getCurrentBrand()); return;
+    }
+    if (!typing && (event.key === 'BrowserBack' || event.key === 'GoBack' || event.key === 'Backspace')) {
+      event.preventDefault(); handleBackAction(); return;
+    }
+    if (!typing && event.key.toLowerCase() === 's') {
+      event.preventDefault(); toggleSettings(); return;
+    }
+    if (!typing && (event.key === 'BrowserHome' || (event.altKey && event.key === 'Home'))) {
+      event.preventDefault(); goHome(); return;
+    }
+    if (!typing && (event.key.toLowerCase() === 'y' || (event.altKey && event.key.toLowerCase() === 'r'))) {
+      event.preventDefault(); toggleRecentOverlay(); return;
+    }
+
+    if (inTab) {
+      if (event.key === 'ArrowRight') { event.preventDefault(); focusTab(activeTabIdx + 1); }
+      else if (event.key === 'ArrowLeft') { event.preventDefault(); focusTab(activeTabIdx - 1); }
+      else if (event.key === 'ArrowDown') { event.preventDefault(); focusSearch(); }
+      else if (event.key === 'Enter') { event.preventDefault(); setActiveTab(activeTabIdx); }
+      return;
+    }
 
     if (inSearch) {
-      if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        focusTile(0, activeCol);
-      }
-      // Esc clears search focus visual
-      if (e.key === 'Escape') {
+      if (event.key === 'ArrowDown')  { event.preventDefault(); focusTile(firstVisibleRowIndex(), activeCol); }
+      else if (event.key === 'ArrowUp') { event.preventDefault(); focusTab(activeTabIdx); }
+      else if (event.key === 'Escape') {
+        event.preventDefault();
         searchForm.classList.remove('tv-focus');
         searchFocused = false;
         searchInput.blur();
-        focusTile(0, activeCol);
+        focusTile(firstVisibleRowIndex(), activeCol);
       }
-      return; // let other keys work naturally in the input
+      return;
     }
 
     if (!inTile) return;
-    if (!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Enter','Escape'].includes(e.key)) return;
-    e.preventDefault();
+    if (!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Enter','Escape'].includes(event.key)) return;
+    event.preventDefault();
 
-    switch (e.key) {
-      case 'ArrowLeft':
-        if (activeCol > 0) focusTile(activeRow, activeCol - 1);
-        break;
-      case 'ArrowRight':
-        if (activeCol < rows[activeRow].length - 1) focusTile(activeRow, activeCol + 1);
-        break;
-      case 'ArrowUp':
-        if (activeRow === 0) focusSearch();
-        else focusTile(activeRow - 1, activeCol);
-        break;
-      case 'ArrowDown':
-        if (activeRow < rows.length - 1) focusTile(activeRow + 1, activeCol);
-        break;
-      case 'Enter': {
-        const t = document.activeElement;
-        launchApp(t.href, t.dataset.name || '');
+    switch (event.key) {
+      case 'ArrowLeft':  if (activeCol > 0) focusTile(activeRow, activeCol - 1); break;
+      case 'ArrowRight': if (activeCol < rows[activeRow].length - 1) focusTile(activeRow, activeCol + 1); break;
+      case 'ArrowUp': {
+        const t = nextVisibleRowIndex(activeRow, -1);
+        if (t === activeRow) focusSearch(); else focusTile(t, activeCol);
         break;
       }
+      case 'ArrowDown': {
+        const t = nextVisibleRowIndex(activeRow, 1);
+        if (t !== activeRow) focusTile(t, activeCol);
+        break;
+      }
+      case 'Enter': {
+        const tile = document.activeElement;
+        launchApp(tile.href, tile.dataset.name || '', tile.dataset.brand || 'default');
+        break;
+      }
+      case 'Escape': handleBackAction(); break;
     }
   });
 
-  // Sync state on focus; intercept clicks to use launchApp
-  rows.flat().forEach(tile => {
+  // ── Tab clicks ────────────────────────────────────
+  navTabs.forEach((tab, i) => {
+    tab.addEventListener('click', () => { setActiveTab(i); focusTab(i); });
+  });
+
+  // ── Tile events ───────────────────────────────────
+  allTiles.forEach(tile => {
     tile.addEventListener('focus', () => {
-      rows.forEach((r, ri) => {
-        const ci = r.indexOf(tile);
+      rows.forEach((rt, ri) => {
+        const ci = rt.indexOf(tile);
         if (ci !== -1) { activeRow = ri; activeCol = ci; }
       });
-      searchFocused = false;
+      searchFocused = false; tabFocused = false;
       searchForm.classList.remove('tv-focus');
-      setAmbient(tile.dataset.brand);
+      setAmbient(tile.dataset.brand || 'default');
     });
-
-    tile.addEventListener('click', e => {
-      e.preventDefault();
-      launchApp(tile.href, tile.dataset.name || '');
+    tile.addEventListener('click', event => {
+      event.preventDefault();
+      launchApp(tile.href, tile.dataset.name || '', tile.dataset.brand || 'default');
     });
   });
 
+  // ── Search input events ───────────────────────────
   searchInput.addEventListener('focus', () => {
-    searchFocused = true;
+    searchFocused = true; tabFocused = false;
     searchForm.classList.add('tv-focus');
     setAmbient('search');
   });
-
   searchInput.addEventListener('blur', () => {
     searchForm.classList.remove('tv-focus');
     searchFocused = false;
   });
 
-  // ── Gamepad / remote control ────────────────────────────────────────────────
-  let gpLoop = null;
-  let lastGpTime = 0;
-  const GP_REPEAT = 220; // ms between repeated actions
+  // ── Panel events ──────────────────────────────────
+  overlayBackdrop.addEventListener('click', () => closeOverlay());
+  siteSearchCancel.addEventListener('click', () => closeOverlay());
+  recentClose.addEventListener('click', () => closeOverlay());
 
+  siteSearchForm.addEventListener('submit', event => {
+    event.preventDefault();
+    const query = siteSearchInput.value.trim();
+    if (!query) return;
+    const p = SEARCH_PROVIDERS[selectedProvider];
+    closeOverlay({ restoreFocus: false });
+    launchApp(p.buildUrl(query), `${p.label}: ${query}`, selectedProvider);
+  });
+
+  // ── Settings events ───────────────────────────────
+  settingsButton.addEventListener('click', () => toggleSettings());
+  settingsCloseBtn.addEventListener('click', () => closeSettings());
+  settingsUpdateBtn.addEventListener('click', runUpdater);
+
+  settingsNavItems.forEach((item, i) => {
+    item.addEventListener('click', () => {
+      settingsNavFocus = i;
+      activateSettingsPane(PANES[i]);
+    });
+    item.addEventListener('focus', () => {
+      settingsPaneFocus = 'sidebar';
+      settingsNavFocus  = i;
+    });
+  });
+
+  // ── Gamepad ───────────────────────────────────────
   function handleGamepad() {
     const gp = navigator.getGamepads?.()[0];
     if (!gp) return;
-
     const now = Date.now();
     if (now - lastGpTime < GP_REPEAT) return;
-
     const [lx, ly] = [gp.axes[0] ?? 0, gp.axes[1] ?? 0];
     const DEAD = 0.45;
-
-    // Analog stick
     let acted = false;
-    if      (ly < -DEAD) { acted = true; searchFocused ? null : (activeRow === 0 ? focusSearch() : focusTile(activeRow - 1, activeCol)); }
-    else if (ly >  DEAD) { acted = true; searchFocused ? focusTile(0, activeCol) : focusTile(activeRow + 1, activeCol); }
-    else if (lx < -DEAD) { acted = true; focusTile(activeRow, activeCol - 1); }
-    else if (lx >  DEAD) { acted = true; focusTile(activeRow, activeCol + 1); }
 
-    // D-pad buttons (12=up, 13=down, 14=left, 15=right)
-    if      (gp.buttons[12]?.pressed) { acted = true; activeRow === 0 ? focusSearch() : focusTile(activeRow - 1, activeCol); }
-    else if (gp.buttons[13]?.pressed) { acted = true; searchFocused ? focusTile(0, activeCol) : focusTile(activeRow + 1, activeCol); }
-    else if (gp.buttons[14]?.pressed) { acted = true; focusTile(activeRow, activeCol - 1); }
-    else if (gp.buttons[15]?.pressed) { acted = true; focusTile(activeRow, activeCol + 1); }
-
-    // A / Cross = confirm
-    if (gp.buttons[0]?.pressed) {
-      acted = true;
-      const activeTile = rows[activeRow]?.[activeCol];
-      if (!searchFocused && activeTile) {
-        launchApp(activeTile.href, activeTile.dataset.name || '');
-      } else if (searchFocused) {
-        searchForm.submit();
+    if (gp.buttons[1]?.pressed || gp.buttons[8]?.pressed) { acted = true; handleBackAction(); }
+    else if (gp.buttons[2]?.pressed || gp.buttons[16]?.pressed) { acted = true; goHome(); }
+    else if (gp.buttons[3]?.pressed) { acted = true; toggleRecentOverlay(); }
+    else if (gp.buttons[9]?.pressed) { acted = true; openSiteSearchPrompt(getCurrentBrand()); }
+    else if (gp.buttons[4]?.pressed) { acted = true; setActiveTab(activeTabIdx - 1); focusTab(activeTabIdx); }
+    else if (gp.buttons[5]?.pressed) { acted = true; setActiveTab(activeTabIdx + 1); focusTab(activeTabIdx); }
+    else if (activeOverlay === 'settings') {
+      if (ly < -DEAD || gp.buttons[12]?.pressed) { acted = true; if (settingsPaneFocus === 'sidebar') focusSettingsNav(settingsNavFocus - 1); }
+      else if (ly > DEAD || gp.buttons[13]?.pressed) { acted = true; if (settingsPaneFocus === 'sidebar') focusSettingsNav(settingsNavFocus + 1); }
+      else if ((lx > DEAD || gp.buttons[15]?.pressed) && settingsPaneFocus === 'sidebar') { acted = true; focusSettingsContent(); }
+      else if ((lx < -DEAD || gp.buttons[14]?.pressed) && settingsPaneFocus === 'content') { acted = true; focusSettingsNav(settingsNavFocus); }
+      else if (gp.buttons[0]?.pressed) { acted = true; if (settingsPaneFocus === 'sidebar') focusSettingsContent(); }
+    } else if (activeOverlay === 'recent') {
+      if (ly < -DEAD || gp.buttons[12]?.pressed) { acted = true; focusRecentItem(recentFocusIndex - 1); }
+      else if (ly > DEAD || gp.buttons[13]?.pressed) { acted = true; focusRecentItem(recentFocusIndex + 1); }
+      else if (gp.buttons[0]?.pressed) { acted = true; recentList.querySelectorAll('.recent-item')[recentFocusIndex]?.click(); }
+    } else if (activeOverlay === 'search') {
+      if (gp.buttons[0]?.pressed) { acted = true; siteSearchInput.focus(); }
+    } else {
+      if (ly < -DEAD || gp.buttons[12]?.pressed) {
+        acted = true;
+        if (searchFocused) focusTab(activeTabIdx);
+        else if (!tabFocused) {
+          const t = nextVisibleRowIndex(activeRow, -1);
+          if (t === activeRow) focusSearch(); else focusTile(t, activeCol);
+        }
+      } else if (ly > DEAD || gp.buttons[13]?.pressed) {
+        acted = true;
+        if (tabFocused) focusSearch();
+        else if (searchFocused) focusTile(firstVisibleRowIndex(), activeCol);
+        else { const t = nextVisibleRowIndex(activeRow, 1); if (t !== activeRow) focusTile(t, activeCol); }
+      } else if (lx < -DEAD || gp.buttons[14]?.pressed) {
+        acted = true;
+        if (tabFocused) focusTab(activeTabIdx - 1);
+        else if (!searchFocused) focusTile(activeRow, activeCol - 1);
+      } else if (lx > DEAD || gp.buttons[15]?.pressed) {
+        acted = true;
+        if (tabFocused) focusTab(activeTabIdx + 1);
+        else if (!searchFocused) focusTile(activeRow, activeCol + 1);
+      }
+      if (gp.buttons[0]?.pressed) {
+        acted = true;
+        if (searchFocused) searchForm.submit();
+        else if (tabFocused) setActiveTab(activeTabIdx);
+        else { const tile = getCurrentTile(); if (tile) launchApp(tile.href, tile.dataset.name || '', tile.dataset.brand || 'default'); }
       }
     }
-
-    // B / Circle = back to search
-    if (gp.buttons[1]?.pressed) { acted = true; focusSearch(); }
-
     if (acted) lastGpTime = now;
   }
 
-  window.addEventListener('gamepadconnected', () => {
-    if (!gpLoop) gpLoop = setInterval(handleGamepad, 50);
-  });
+  // ── Init ──────────────────────────────────────────
+  window.addEventListener('online',  updateNetworkStatus);
+  window.addEventListener('offline', updateNetworkStatus);
+  window.addEventListener('gamepadconnected',    () => { if (!gpLoop) gpLoop = setInterval(handleGamepad, 50); });
+  window.addEventListener('gamepaddisconnected', () => { clearInterval(gpLoop); gpLoop = null; });
 
-  window.addEventListener('gamepaddisconnected', () => {
-    clearInterval(gpLoop);
-    gpLoop = null;
-  });
+  activeLanguage = getSavedLanguage();
+  document.documentElement.lang = activeLanguage;
+  translatePage();
+  renderLangOptions();
+  navLangDesc.textContent = LANGUAGES[activeLanguage].label;
 
-  // ── Initial focus ───────────────────────────────────────────────────────────
-  window.addEventListener('load', () => {
-    setTimeout(() => focusTile(0, 0), 120);
-  });
+  updateClock();
+  updateNetworkStatus();
+  updateUpdatesStatus();
+  initBatteryStatus();
+  renderRecentList();
+  setActiveTab(0);
+  setAmbient('default');
+  setInterval(updateClock, 10000);
+
+  window.addEventListener('load', () => setTimeout(() => focusTile(0, 0), 120));
 </script>
-
 </body>
 </html>

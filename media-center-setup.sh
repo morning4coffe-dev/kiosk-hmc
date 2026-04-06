@@ -34,8 +34,8 @@ else
     CHROMIUM_PKG="chromium"
 fi
 
-sudo apt install -y "$CHROMIUM_PKG" unclutter xdotool
-echo "  -> Installed $CHROMIUM_PKG"
+sudo apt install -y "$CHROMIUM_PKG" unclutter xdotool unzip curl python3 git
+ echo "  -> Installed $CHROMIUM_PKG and required utilities"
 
 # ----------------------------------------------------------
 # 2. Enable auto-login (GDM3 or LightDM)
@@ -84,6 +84,16 @@ else
     echo "  !! launcher.html not found next to this script."
     echo "     Place it at: $SCRIPT_DIR/launcher.html"
     echo "     and re-run, or copy it manually to: $LAUNCHER_HTML"
+fi
+
+if [ -f "$SCRIPT_DIR/updater.py" ]; then
+    cp "$SCRIPT_DIR/updater.py" "$LAUNCHER_DIR/updater.py"
+    chmod +x "$LAUNCHER_DIR/updater.py"
+    echo "  -> Copied updater.py to $LAUNCHER_DIR"
+else
+    echo "  !! updater.py not found next to this script."
+    echo "     Place it at: $SCRIPT_DIR/updater.py"
+    echo "     to enable UI-driven updates."
 fi
 
 # ----------------------------------------------------------
@@ -135,41 +145,67 @@ sleep 3
 LAUNCHER="$HOME/MediaCenter/launcher.html"
 
 # Detect Wayland vs X11
+DISPLAY_FLAGS=()
 if [ "$XDG_SESSION_TYPE" = "wayland" ]; then
-    DISPLAY_FLAGS="--ozone-platform=wayland --enable-features=UseOzonePlatform"
+    DISPLAY_FLAGS+=(--ozone-platform=wayland --enable-features=UseOzonePlatform)
 else
     # Disable screen blanking & screensaver (X11 only)
     xset s off
     xset s noblank
     xset -dpms
-    DISPLAY_FLAGS=""
 fi
 
 # Hide mouse cursor after 3 s of inactivity
 unclutter -idle 3 -root &
 
-# Kill any existing Chromium instances
-pkill -f "chromium" 2>/dev/null || true
+# Kill any existing browser instances from previous kiosk runs
+pkill -f "google-chrome|chromium" 2>/dev/null || true
 sleep 1
 
-# Resolve the correct binary name
-CHROMIUM_BIN="chromium-browser"
-command -v chromium-browser &>/dev/null || CHROMIUM_BIN="chromium"
+# Prefer browsers Netflix officially supports when available.
+# Chromium remains a fallback, but desktop playback is usually more reliable in
+# Google Chrome than in a Chromium build pretending to be a smart TV.
+BROWSER_BIN=""
+for candidate in google-chrome-stable google-chrome chromium-browser chromium; do
+    if command -v "$candidate" &>/dev/null; then
+        BROWSER_BIN="$candidate"
+        break
+    fi
+done
 
-# Load uBlock Origin extension if it exists
-LOAD_EXT=""
-if [ -d "$HOME/MediaCenter/extensions/ublock-origin" ]; then
-    LOAD_EXT="--load-extension=$HOME/MediaCenter/extensions/ublock-origin"
+if [ -z "$BROWSER_BIN" ]; then
+    echo "No supported browser binary found."
+    exit 1
 fi
 
-# Launch Chromium in kiosk mode
+# Load uBlock Origin extension if it exists
+EXTENSION_FLAGS=()
+if [ -d "$HOME/MediaCenter/extensions/ublock-origin" ]; then
+    EXTENSION_FLAGS+=(--load-extension="$HOME/MediaCenter/extensions/ublock-origin")
+fi
+
+# Start the local updater service if available.
+if [ -f "$HOME/MediaCenter/updater.py" ]; then
+    pkill -f "updater.py" 2>/dev/null || true
+    python3 "$HOME/MediaCenter/updater.py" >/tmp/media-center-updater.log 2>&1 &
+fi
+
+# Use the browser's native desktop user agent by default. Netflix playback can
+# stall indefinitely when the whole browser impersonates a smart TV, because the
+# site then expects a certified TV app/device stack instead of a regular browser.
+COMPAT_FLAGS=()
+if [ "${MEDIA_CENTER_FORCE_TV_UA:-0}" = "1" ]; then
+    COMPAT_FLAGS+=(--user-agent="Mozilla/5.0 (SMART-TV; Linux; Tizen 6.0) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/4.0 Chrome/76.0.3809.146 TV Safari/537.36")
+fi
+
+# Launch the browser in kiosk mode
 # --disable-popup-blocking: lets the launcher open services in new windows
 # --homepage: Alt+Home returns here from any streaming site
-# --user-agent: Samsung Tizen TV UA — gives TV UI on Netflix/Disney+/YouTube/etc.
-$CHROMIUM_BIN \
-    $DISPLAY_FLAGS \
-    $LOAD_EXT \
-    --user-agent="Mozilla/5.0 (SMART-TV; Linux; Tizen 6.0) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/4.0 Chrome/76.0.3809.146 TV Safari/537.36" \
+"$BROWSER_BIN" \
+    "${DISPLAY_FLAGS[@]}" \
+    "${EXTENSION_FLAGS[@]}" \
+    "${COMPAT_FLAGS[@]}" \
+    --allow-file-access-from-files \
     --kiosk \
     --start-fullscreen \
     --start-maximized \
@@ -185,8 +221,6 @@ $CHROMIUM_BIN \
     --autoplay-policy=no-user-gesture-required \
     --disable-popup-blocking \
     --homepage="file://$LAUNCHER" \
-    --check-for-update-interval=31536000 \
-    --disable-component-update \
     "file://$LAUNCHER"
 KIOSK
 
