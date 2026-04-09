@@ -27,15 +27,34 @@ echo ""
 echo "[1/6] Installing packages..."
 sudo apt update -qq
 
-# Ubuntu 22.04+ ships 'chromium' (snap); older releases use 'chromium-browser' (deb)
-if apt-cache show chromium-browser &>/dev/null 2>&1; then
-    CHROMIUM_PKG="chromium-browser"
-else
-    CHROMIUM_PKG="chromium"
-fi
+sudo apt install -y unclutter xdotool unzip curl python3 git wget
 
-sudo apt install -y "$CHROMIUM_PKG" unclutter xdotool unzip curl python3 git
- echo "  -> Installed $CHROMIUM_PKG and required utilities"
+# Google Chrome is strongly preferred — it ships with Widevine DRM which is
+# required by Netflix, OnePlay, Disney+ and other streaming services.
+# Chromium does NOT include Widevine by default on Linux.
+if command -v google-chrome-stable &>/dev/null || command -v google-chrome &>/dev/null; then
+    echo "  -> Google Chrome already installed"
+else
+    echo "  -> Installing Google Chrome (required for DRM/Widevine)..."
+    CHROME_DEB=$(mktemp --suffix=.deb)
+    wget -q "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb" -O "$CHROME_DEB" 2>/dev/null \
+        || curl -sL "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb" -o "$CHROME_DEB" 2>/dev/null
+    if [ -s "$CHROME_DEB" ]; then
+        sudo dpkg -i "$CHROME_DEB" 2>/dev/null || sudo apt install -f -y
+        rm -f "$CHROME_DEB"
+        echo "  -> Google Chrome installed"
+    else
+        echo "  !! Could not download Google Chrome."
+        echo "     Falling back to Chromium (DRM may not work without manual Widevine setup)."
+        if apt-cache show chromium-browser &>/dev/null 2>&1; then
+            CHROMIUM_PKG="chromium-browser"
+        else
+            CHROMIUM_PKG="chromium"
+        fi
+        sudo apt install -y "$CHROMIUM_PKG"
+        echo "  -> Installed $CHROMIUM_PKG (Widevine not included)"
+    fi
+fi
 
 # ----------------------------------------------------------
 # 2. Enable auto-login (GDM3 or LightDM)
@@ -94,6 +113,12 @@ else
     echo "  !! updater.py not found next to this script."
     echo "     Place it at: $SCRIPT_DIR/updater.py"
     echo "     to enable UI-driven updates."
+fi
+
+# Copy bundled extensions (e.g. YouTube TV UA override)
+if [ -d "$SCRIPT_DIR/extensions" ]; then
+    cp -r "$SCRIPT_DIR/extensions/"* "$EXTENSIONS_DIR/" 2>/dev/null || true
+    echo "  -> Copied bundled extensions to $EXTENSIONS_DIR"
 fi
 
 # ----------------------------------------------------------
@@ -178,10 +203,14 @@ if [ -z "$BROWSER_BIN" ]; then
     exit 1
 fi
 
-# Load uBlock Origin extension if it exists
+# Load all unpacked extensions from the extensions directory
 EXTENSION_FLAGS=()
-if [ -d "$HOME/MediaCenter/extensions/ublock-origin" ]; then
-    EXTENSION_FLAGS+=(--load-extension="$HOME/MediaCenter/extensions/ublock-origin")
+EXT_PATHS=""
+for ext_dir in "$HOME/MediaCenter/extensions"/*/; do
+    [ -f "${ext_dir}manifest.json" ] && EXT_PATHS="${EXT_PATHS:+$EXT_PATHS,}${ext_dir%/}"
+done
+if [ -n "$EXT_PATHS" ]; then
+    EXTENSION_FLAGS+=(--load-extension="$EXT_PATHS")
 fi
 
 # Start the local updater service if available.
@@ -190,13 +219,10 @@ if [ -f "$HOME/MediaCenter/updater.py" ]; then
     python3 "$HOME/MediaCenter/updater.py" >/tmp/media-center-updater.log 2>&1 &
 fi
 
-# Use the browser's native desktop user agent by default. Netflix playback can
-# stall indefinitely when the whole browser impersonates a smart TV, because the
-# site then expects a certified TV app/device stack instead of a regular browser.
-COMPAT_FLAGS=()
-if [ "${MEDIA_CENTER_FORCE_TV_UA:-0}" = "1" ]; then
-    COMPAT_FLAGS+=(--user-agent="Mozilla/5.0 (SMART-TV; Linux; Tizen 6.0) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/4.0 Chrome/76.0.3809.146 TV Safari/537.36")
-fi
+# IMPORTANT: Do NOT override the user agent. Fake TV/Chromecast UAs break DRM
+# because Netflix/OnePlay/Disney+ then expect a certified device stack.
+# The browser's native UA + Widevine (included in Google Chrome) is all we need.
+# YouTube TV interface is accessed via youtube.com/tv URL, no UA trick needed.
 
 # Launch the browser in kiosk mode
 # --disable-popup-blocking: lets the launcher open services in new windows
@@ -204,7 +230,6 @@ fi
 "$BROWSER_BIN" \
     "${DISPLAY_FLAGS[@]}" \
     "${EXTENSION_FLAGS[@]}" \
-    "${COMPAT_FLAGS[@]}" \
     --allow-file-access-from-files \
     --kiosk \
     --start-fullscreen \

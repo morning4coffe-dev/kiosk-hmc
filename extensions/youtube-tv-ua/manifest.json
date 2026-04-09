@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube TV User-Agent",
+  "version": "1.0",
+  "description": "Sends a Chromecast user-agent only on youtube.com so the TV interface loads. Other sites keep the real browser UA for DRM compatibility.",
+  "permissions": ["declarativeNetRequest"],
+  "host_permissions": ["*://*.youtube.com/*", "*://*.youtubei.googleapis.com/*"],
+  "declarative_net_request": {
+    "rule_resources": [{
+      "id": "youtube_ua",
+      "enabled": true,
+      "path": "rules.json"
+    }]
+  },
+  "content_scripts": [{
+    "matches": ["*://*.youtube.com/*"],
+    "js": ["ua-override.js"],
+    "run_at": "document_start",
+    "world": "MAIN"
+  }]
+}
