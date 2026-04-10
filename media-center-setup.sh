@@ -156,6 +156,36 @@ else
     echo "     - Search for 'uBlock Origin'"
 fi
 
+# SponsorBlock — auto-skip YouTube sponsor segments
+echo "  -> Installing SponsorBlock for YouTube..."
+SPONSORBLOCK_URL="https://github.com/nichobi/nichobi.github.io/raw/master/nichobi-sponsorblock-chrome.zip"
+SPONSORBLOCK_DIR="$EXTENSIONS_DIR/sponsorblock"
+TEMP_ZIP2=$(mktemp)
+wget -q "$SPONSORBLOCK_URL" -O "$TEMP_ZIP2" 2>/dev/null || curl -sL "$SPONSORBLOCK_URL" -o "$TEMP_ZIP2" 2>/dev/null || true
+if [ -s "$TEMP_ZIP2" ]; then
+    rm -rf "$SPONSORBLOCK_DIR"; mkdir -p "$SPONSORBLOCK_DIR"
+    unzip -q "$TEMP_ZIP2" -d "$SPONSORBLOCK_DIR" 2>/dev/null || true
+    rm -f "$TEMP_ZIP2"
+    echo "  -> SponsorBlock installed"
+else
+    echo "  !! SponsorBlock download failed (optional, skipping)"
+fi
+
+# Dark Reader — force dark mode on all sites
+echo "  -> Installing Dark Reader..."
+DARKREADER_URL="https://github.com/nichobi/nichobi.github.io/raw/master/nichobi-darkreader-chrome.zip"
+DARKREADER_DIR="$EXTENSIONS_DIR/dark-reader"
+TEMP_ZIP3=$(mktemp)
+wget -q "$DARKREADER_URL" -O "$TEMP_ZIP3" 2>/dev/null || curl -sL "$DARKREADER_URL" -o "$TEMP_ZIP3" 2>/dev/null || true
+if [ -s "$TEMP_ZIP3" ]; then
+    rm -rf "$DARKREADER_DIR"; mkdir -p "$DARKREADER_DIR"
+    unzip -q "$TEMP_ZIP3" -d "$DARKREADER_DIR" 2>/dev/null || true
+    rm -f "$TEMP_ZIP3"
+    echo "  -> Dark Reader installed"
+else
+    echo "  !! Dark Reader download failed (optional, skipping)"
+fi
+
 # ----------------------------------------------------------
 # 5. Create the kiosk launch script
 # ----------------------------------------------------------
@@ -242,9 +272,13 @@ fi
     --overscroll-history-navigation=0 \
     --password-store=basic \
     --noerrdialogs \
-    --enable-features=OverlayScrollbar \
+    --enable-features=OverlayScrollbar,VaapiVideoDecoder,VaapiVideoEncoder \
     --autoplay-policy=no-user-gesture-required \
     --disable-popup-blocking \
+    --enable-gpu-rasterization \
+    --enable-zero-copy \
+    --ignore-gpu-blocklist \
+    --enable-accelerated-video-decode \
     --homepage="file://$LAUNCHER" \
     "file://$LAUNCHER"
 KIOSK

@@ -1145,6 +1145,133 @@
     .panel-btn { width: 100%; }
   }
 
+  /* ── Screensaver ── */
+  .screensaver {
+    position: fixed; inset: 0; z-index: 300;
+    background: var(--bg);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.8s ease;
+  }
+  .screensaver.active { opacity: 1; pointer-events: all; }
+  .screensaver-time {
+    font-size: clamp(6rem, 14vw, 12rem);
+    font-weight: 200; letter-spacing: 0.06em; line-height: 1;
+  }
+  .screensaver-date {
+    font-size: clamp(1.2rem, 2.5vw, 2rem);
+    font-weight: 300; color: var(--text-mid);
+    margin-top: 2vh; letter-spacing: 0.06em;
+  }
+  .screensaver-hint {
+    position: absolute; bottom: 5vh;
+    font-size: 0.8rem; color: var(--text-dim);
+    opacity: 0; animation: ssHintPulse 3s 4s ease infinite;
+  }
+  @keyframes ssHintPulse {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 0.6; }
+  }
+  .screensaver .ambient-glow {
+    position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse 80% 50% at 50% 110%, rgba(var(--ambient-primary),0.18) 0%, transparent 60%);
+    transition: background 4s ease;
+  }
+
+  /* ── Hero / Featured banner ── */
+  .hero {
+    padding: 0 clamp(32px,4vw,64px);
+    margin-bottom: clamp(4px,0.6vh,10px);
+    animation: fadeUp 0.35s 0.1s ease both;
+    flex-shrink: 0;
+  }
+  .hero.is-hidden { display: none; }
+  .hero-card {
+    position: relative; width: 100%;
+    height: clamp(120px, 18vh, 200px);
+    border-radius: var(--radius-lg); overflow: hidden;
+    display: flex; align-items: center;
+    padding: 0 clamp(28px,4vw,56px); gap: 28px;
+    cursor: pointer; outline: none;
+    transition: transform 0.22s cubic-bezier(0.33,1,0.68,1), box-shadow 0.22s ease;
+  }
+  .hero-card:focus {
+    transform: scale(1.012);
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.88), 0 20px 60px rgba(0,0,0,0.6);
+  }
+  .hero-bg {
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(var(--hero-color),0.32) 0%, rgba(var(--hero-color),0.06) 100%);
+    border: 1.5px solid rgba(255,255,255,0.1);
+    border-radius: inherit;
+  }
+  .hero-logo {
+    height: 44%; width: auto; max-width: 160px;
+    object-fit: contain; position: relative; z-index: 1;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
+  }
+  .hero-info { position: relative; z-index: 1; flex: 1; min-width: 0; }
+  .hero-title { font-size: clamp(1.3rem,2.4vw,1.8rem); font-weight: 700; }
+  .hero-desc {
+    font-size: clamp(0.78rem,1vw,0.92rem); color: var(--text-mid);
+    margin-top: 6px; line-height: 1.4;
+  }
+  .hero-cta {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: 12px; padding: 8px 18px;
+    border-radius: 999px; border: none;
+    background: rgba(255,255,255,0.16);
+    color: var(--text); font: inherit; font-size: 0.82rem; font-weight: 700;
+    pointer-events: none;
+  }
+  .hero-dots {
+    position: absolute; bottom: 14px; right: 24px;
+    display: flex; gap: 8px; z-index: 1;
+  }
+  .hero-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(255,255,255,0.25); transition: all 0.3s;
+  }
+  .hero-dot.active { background: rgba(255,255,255,0.9); width: 22px; border-radius: 4px; }
+
+  /* ── Favorites badge on tiles ── */
+  .tile .fav-star {
+    position: absolute; top: 8px; right: 8px;
+    font-size: 1.1rem; z-index: 2;
+    color: rgba(255,255,255,0.4);
+    opacity: 0; transition: opacity 0.18s, color 0.18s;
+    pointer-events: none;
+  }
+  .tile:focus .fav-star, .tile:hover .fav-star { opacity: 0.7; }
+  .tile.is-fav .fav-star { color: #ffd700; opacity: 1 !important; }
+
+  /* ── Context menu ── */
+  .ctx-menu {
+    position: fixed; z-index: 250;
+    background: rgba(22,22,28,0.96);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 14px; padding: 6px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    min-width: 210px;
+    opacity: 0; scale: 0.95;
+    transition: opacity 0.15s, scale 0.15s;
+    pointer-events: none;
+  }
+  .ctx-menu.visible { opacity: 1; scale: 1; pointer-events: all; }
+  .ctx-item {
+    display: flex; align-items: center; gap: 12px;
+    width: 100%; padding: 12px 14px;
+    border: none; border-radius: 10px;
+    background: transparent; color: var(--text);
+    font: inherit; font-size: 0.9rem; font-weight: 500;
+    cursor: pointer; outline: none; text-align: left;
+    transition: background 0.15s;
+  }
+  .ctx-item:focus, .ctx-item:hover { background: rgba(255,255,255,0.1); }
+  .ctx-item .material-symbols-outlined { font-size: 1.2rem; color: var(--text-mid); }
+
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(18px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -1319,6 +1446,14 @@
   <div class="recent-list" id="recent-list"></div>
 </div>
 
+<!-- ── Screensaver ── -->
+<div class="screensaver" id="screensaver">
+  <div class="ambient-glow"></div>
+  <div class="screensaver-time" id="screensaver-time">00:00</div>
+  <div class="screensaver-date" id="screensaver-date"></div>
+  <div class="screensaver-hint" id="screensaver-hint">Stiskni cokoliv pro návrat</div>
+</div>
+
 <!-- ═══════════════════════════════════
      TV SETTINGS OVERLAY
      Two-column: sidebar + content pane
@@ -1448,6 +1583,19 @@
         </div>
       </div>
       <div class="settings-row">
+        <div class="settings-row-label" data-i18n="row.sound">Zvuky</div>
+        <div class="settings-action-list">
+          <button class="settings-action-btn" type="button" id="settings-sound-toggle">
+            <span class="material-symbols-outlined action-icon" id="sound-toggle-icon">volume_up</span>
+            <span class="action-text">
+              <span class="action-label" data-i18n="action.sound">Zvuky navigace</span>
+              <span class="action-desc" data-i18n="action.sound.desc">Jemné zvuky při pohybu a výběru.</span>
+            </span>
+            <span class="action-badge ok" id="sound-toggle-badge">Zapnuto</span>
+          </button>
+        </div>
+      </div>
+      <div class="settings-row">
         <div class="settings-row-label" data-i18n="row.kiosk">Kiosk</div>
         <div class="settings-action-list">
           <button class="settings-action-btn" type="button" onclick="window.close()">
@@ -1511,6 +1659,10 @@
   const MONTHS = ['ledna','února','března','dubna','května','června',
                   'července','srpna','září','října','listopadu','prosince'];
   const RECENT_STORAGE_KEY = 'media-center-recent-apps';
+  const FAVORITES_KEY      = 'media-center-favorites';
+  const SOUND_KEY          = 'media-center-sound';
+  const SCREENSAVER_DELAY  = 180000; // 3 minutes
+  const IDLE_RETURN_DELAY  = 600000; // 10 minutes — auto-return to launcher tab
   const TAB_FILTERS = ['all', 'streaming', 'music', 'other'];
   const TAB_AMBIENTS = ['default', 'netflix', 'spotify', 'plex'];
 
@@ -1597,6 +1749,15 @@
   let overlayReturnFocus = null;
   let selectedProvider = providerKeys[0] || 'netflix';
   let recentApps       = loadRecentApps();
+  let soundEnabled     = localStorage.getItem(SOUND_KEY) !== 'off';
+  let audioCtx         = null;
+  let screensaverTimer = null;
+  let idleReturnTimer  = null;
+  let screensaverActive = false;
+  let heroIndex        = 0;
+  let ctxTarget        = null;
+  let ctxFocusIdx      = 0;
+  let longPressTimer   = null;
   let recentFocusIndex = 0;
   let gpLoop = null;
   let lastGpTime = 0;
@@ -2084,7 +2245,11 @@
         'row.language': 'Dostupné jazyky', 'row.updates': 'Aktualizace', 'row.kiosk': 'Kiosk',
         'action.update': 'Spustit aktualizaci', 'action.update.desc': 'Stáhne nejnovější verzi přes git a spustí setup skript.',
         'action.exit': 'Ukončit kiosk', 'action.exit.desc': 'Zavře toto okno prohlížeče.',
-        'action.reload': 'Obnovit launcher', 'action.reload.desc': 'Znovu načte tuto stránku.'
+        'action.reload': 'Obnovit launcher', 'action.reload.desc': 'Znovu načte tuto stránku.',
+        'action.sound': 'Zvuky navigace', 'action.sound.desc': 'Jemné zvuky při pohybu a výběru.',
+        'row.sound': 'Zvuky', 'sound.on': 'Zapnuto', 'sound.off': 'Vypnuto',
+        'ctx.open': 'Otevřít', 'ctx.search': 'Hledat', 
+        'hero.open': 'Otevřít', 'screensaver.hint': 'Stiskni cokoliv pro návrat'
       }
     },
     en: {
@@ -2107,7 +2272,11 @@
         'row.language': 'Available languages', 'row.updates': 'Updates', 'row.kiosk': 'Kiosk',
         'action.update': 'Run update', 'action.update.desc': 'Downloads the latest version via git and runs the setup script.',
         'action.exit': 'Exit kiosk', 'action.exit.desc': 'Closes this browser window.',
-        'action.reload': 'Reload launcher', 'action.reload.desc': 'Reloads this page.'
+        'action.reload': 'Reload launcher', 'action.reload.desc': 'Reloads this page.',
+        'action.sound': 'Navigation sounds', 'action.sound.desc': 'Subtle sounds on focus and selection.',
+        'row.sound': 'Sounds', 'sound.on': 'On', 'sound.off': 'Off',
+        'ctx.open': 'Open', 'ctx.search': 'Search', 'ctx.fav': 'Add to favorites', 'ctx.unfav': 'Remove from favorites',
+        'hero.open': 'Open', 'screensaver.hint': 'Press anything to return'
       }
     }
   };
@@ -2150,6 +2319,86 @@
     translatePage();
     renderLangOptions();
     navLangDesc.textContent = LANGUAGES[activeLanguage].label;
+  }
+
+  // ── Sound effects (Web Audio API) ─────────────────
+  function playTick() {
+    if (!soundEnabled) return;
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.type = 'sine'; osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.06);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.06);
+    } catch {}
+  }
+  function playSelect() {
+    if (!soundEnabled) return;
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.type = 'sine'; osc.frequency.value = 1200;
+      gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+    } catch {}
+  }
+
+  function toggleSound() {
+    soundEnabled = !soundEnabled;
+    localStorage.setItem(SOUND_KEY, soundEnabled ? 'on' : 'off');
+    updateSoundUI();
+    if (soundEnabled) playSelect();
+  }
+
+  function updateSoundUI() {
+    const icon = document.getElementById('sound-toggle-icon');
+    const badge = document.getElementById('sound-toggle-badge');
+    const strings = LANGUAGES[activeLanguage]?.strings || LANGUAGES.cs.strings;
+    if (icon) icon.textContent = soundEnabled ? 'volume_up' : 'volume_off';
+    if (badge) {
+      badge.textContent = soundEnabled ? (strings['sound.on'] || 'Zapnuto') : (strings['sound.off'] || 'Vypnuto');
+      badge.className = `action-badge ${soundEnabled ? 'ok' : ''}`;
+    }
+  }
+
+  // ── Screensaver ──────────────────────────────────
+  const screensaverEl     = document.getElementById('screensaver');
+  const screensaverTime   = document.getElementById('screensaver-time');
+  const screensaverDate   = document.getElementById('screensaver-date');
+
+  function updateScreensaverClock() {
+    const now = new Date();
+    screensaverTime.textContent = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+    screensaverDate.textContent = `${DAYS[now.getDay()]}, ${now.getDate()}. ${MONTHS[now.getMonth()]}`;
+  }
+
+  function activateScreensaver() {
+    if (screensaverActive || activeOverlay) return;
+    screensaverActive = true;
+    updateScreensaverClock();
+    screensaverEl.classList.add('active');
+  }
+
+  function deactivateScreensaver() {
+    if (!screensaverActive) return;
+    screensaverActive = false;
+    screensaverEl.classList.remove('active');
+    resetIdleTimers();
+  }
+
+  function resetIdleTimers() {
+    clearTimeout(screensaverTimer);
+    clearTimeout(idleReturnTimer);
+    screensaverTimer = setTimeout(activateScreensaver, SCREENSAVER_DELAY);
+    idleReturnTimer  = setTimeout(() => {
+      if (activeTabIdx !== 0) setActiveTab(0, { focusTile: true });
+    }, IDLE_RETURN_DELAY);
   }
 
   // ── Updater ───────────────────────────────────────
@@ -2204,6 +2453,9 @@
   }
 
   document.addEventListener('keydown', event => {
+    resetIdleTimers();
+    if (screensaverActive) { deactivateScreensaver(); event.preventDefault(); return; }
+
     if (activeOverlay === 'settings') { handleSettingsKeys(event); return; }
     if (activeOverlay === 'search')   { handleSearchOverlayKeys(event); return; }
     if (activeOverlay === 'recent')   { handleRecentOverlayKeys(event); return; }
@@ -2255,21 +2507,23 @@
     event.preventDefault();
 
     switch (event.key) {
-      case 'ArrowLeft':  if (activeCol > 0) focusTile(activeRow, activeCol - 1); break;
-      case 'ArrowRight': if (activeCol < rows[activeRow].length - 1) focusTile(activeRow, activeCol + 1); break;
+      case 'ArrowLeft':  if (activeCol > 0) { focusTile(activeRow, activeCol - 1); playTick(); } break;
+      case 'ArrowRight': if (activeCol < rows[activeRow].length - 1) { focusTile(activeRow, activeCol + 1); playTick(); } break;
       case 'ArrowUp': {
         const t = nextVisibleRowIndex(activeRow, -1);
         if (t === activeRow) focusSearch(); else focusTile(t, activeCol);
+        playTick();
         break;
       }
       case 'ArrowDown': {
         const t = nextVisibleRowIndex(activeRow, 1);
-        if (t !== activeRow) focusTile(t, activeCol);
+        if (t !== activeRow) { focusTile(t, activeCol); playTick(); }
         break;
       }
       case 'Enter': {
         const tile = document.activeElement;
         launchApp(tile.href, tile.dataset.name || '', tile.dataset.brand || 'default');
+        playSelect();
         break;
       }
       case 'Escape': handleBackAction(); break;
@@ -2405,6 +2659,17 @@
   window.addEventListener('gamepadconnected',    () => { if (!gpLoop) gpLoop = setInterval(handleGamepad, 50); });
   window.addEventListener('gamepaddisconnected', () => { clearInterval(gpLoop); gpLoop = null; });
 
+  // Screensaver wake on mouse/touch
+  ['mousemove', 'mousedown', 'touchstart', 'wheel'].forEach(evt =>
+    document.addEventListener(evt, () => {
+      resetIdleTimers();
+      if (screensaverActive) deactivateScreensaver();
+    }, { passive: true })
+  );
+
+  // Sound toggle
+  document.getElementById('settings-sound-toggle')?.addEventListener('click', toggleSound);
+
   activeLanguage = getSavedLanguage();
   document.documentElement.lang = activeLanguage;
   translatePage();
@@ -2418,7 +2683,10 @@
   renderRecentList();
   setActiveTab(0);
   setAmbient('default');
+  updateSoundUI();
+  resetIdleTimers();
   setInterval(updateClock, 10000);
+  setInterval(() => { if (screensaverActive) updateScreensaverClock(); }, 10000);
 
   window.addEventListener('load', () => setTimeout(() => focusTile(0, 0), 120));
 </script>
