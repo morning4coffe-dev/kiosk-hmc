@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "Media Center Watch History",
+  "version": "1.0",
+  "description": "Captures what's playing on streaming services and reports it to Media Center launcher",
+  "permissions": ["storage"],
+  "host_permissions": [
+    "*://*.netflix.com/*",
+    "*://*.youtube.com/*",
+    "*://*.disneyplus.com/*",
+    "*://*.max.com/*",
+    "*://*.primevideo.com/*",
+    "*://*.spotify.com/*",
+    "*://*.twitch.tv/*",
+    "*://*.plex.tv/*",
+    "http://127.0.0.1:8765/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.netflix.com/*",
+        "*://*.youtube.com/*",
+        "*://*.disneyplus.com/*",
+        "*://*.max.com/*",
+        "*://*.primevideo.com/*",
+        "*://*.spotify.com/*",
+        "*://*.twitch.tv/*",
+        "*://*.plex.tv/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {}
+}

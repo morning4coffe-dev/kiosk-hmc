@@ -1272,6 +1272,173 @@
   .ctx-item:focus, .ctx-item:hover { background: rgba(255,255,255,0.1); }
   .ctx-item .material-symbols-outlined { font-size: 1.2rem; color: var(--text-mid); }
 
+  /* ── Continue Watching ── */
+  .continue-row .tile { position: relative; }
+  .watch-meta {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 8px 12px;
+    background: linear-gradient(to top, rgba(0,0,0,0.78) 0%, transparent 100%);
+    border-radius: 0 0 calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.88);
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+  .tile:focus .watch-meta,
+  .tile:hover .watch-meta { opacity: 1; }
+  .watch-meta-duration {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 600;
+  }
+  .watch-meta-duration .material-symbols-outlined { font-size: 0.85rem; }
+  .watch-meta-ago { color: rgba(255,255,255,0.5); font-size: 0.66rem; }
+
+  /* ── History view ── */
+  .history-view {
+    display: none;
+    flex-direction: column;
+    gap: clamp(14px,2vh,24px);
+    padding: 0 clamp(32px,4vw,64px) clamp(16px,2vh,28px);
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.12) transparent;
+    animation: fadeUp 0.4s ease both;
+  }
+  .history-view.active { display: flex; }
+  .history-stats {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .history-stat-card {
+    flex: 1;
+    min-width: 160px;
+    background: var(--surface);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: var(--radius-lg);
+    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: border-color 0.18s, background 0.18s;
+  }
+  .history-stat-card:hover {
+    border-color: rgba(255,255,255,0.14);
+    background: var(--surface-2);
+  }
+  .history-stat-icon {
+    font-size: 1.3rem;
+    color: var(--text-dim);
+    margin-bottom: 2px;
+  }
+  .history-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .history-stat-label {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 600;
+  }
+  .history-day-group { margin-bottom: 8px; }
+  .history-day-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .history-day-total {
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: none;
+  }
+  .history-items {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .history-item {
+    display: grid;
+    grid-template-columns: 12px 1fr auto auto;
+    gap: 14px;
+    align-items: center;
+    padding: 13px 16px;
+    border-radius: 12px;
+    transition: background 0.15s;
+    cursor: default;
+  }
+  .history-item:hover { background: rgba(255,255,255,0.04); }
+  .history-swatch {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: rgba(var(--swatch-color, var(--color-default)), 0.96);
+    box-shadow: 0 0 0 4px rgba(var(--swatch-color, var(--color-default)), 0.12);
+  }
+  .history-item-info { min-width: 0; }
+  .history-item-name {
+    font-size: 0.92rem;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .history-item-title {
+    font-size: 0.76rem;
+    color: var(--text-dim);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .history-item-duration {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-mid);
+    white-space: nowrap;
+    padding: 4px 10px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 999px;
+  }
+  .history-item-time {
+    font-size: 0.76rem;
+    color: var(--text-dim);
+    white-space: nowrap;
+    min-width: 50px;
+    text-align: right;
+  }
+  .history-empty {
+    padding: 60px 0;
+    text-align: center;
+    color: var(--text-dim);
+  }
+  .history-empty-icon {
+    font-size: 3.5rem;
+    opacity: 0.2;
+    display: block;
+    margin-bottom: 14px;
+  }
+  .history-empty-text { font-size: 0.95rem; }
+
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(18px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -1309,6 +1476,7 @@
       <button class="nav-tab"        data-tab="1" data-i18n="tab.streaming">Streaming</button>
       <button class="nav-tab"        data-tab="2" data-i18n="tab.music">Hudba</button>
       <button class="nav-tab"        data-tab="3" data-i18n="tab.other">Ostatní</button>
+      <button class="nav-tab"        data-tab="4" data-i18n="tab.history">Historie</button>
     </nav>
     <div class="time-block">
       <div class="time-text">
@@ -1337,6 +1505,11 @@
   </div>
 
   <div class="content">
+
+    <div class="section is-hidden" data-row="cw" data-section="continue" id="continue-section">
+      <div class="section-label" data-i18n="section.continue">Pokračovat ve sledování</div>
+      <div class="row-scroll"><div class="row continue-row" id="continue-row"></div></div>
+    </div>
 
     <div class="section" data-row="0" data-section="streaming">
       <div class="section-label" data-i18n="section.streaming">Streaming</div>
@@ -1396,6 +1569,11 @@
       </div></div>
     </div>
 
+    <div class="history-view" id="history-view">
+      <div class="history-stats" id="history-stats"></div>
+      <div id="history-timeline"></div>
+    </div>
+
   </div>
 </div>
 
@@ -1405,6 +1583,7 @@
     <span class="hint"><kbd>/</kbd> <span data-i18n="hint.search">Služba</span></span>
     <span class="hint"><kbd>S</kbd> <span data-i18n="hint.settings">Nastavení</span></span>
     <span class="hint"><kbd>Y</kbd> <span data-i18n="hint.recent">Naposledy</span></span>
+    <span class="hint"><kbd>H</kbd> <span data-i18n="hint.history">Historie</span></span>
     <span class="hint"><kbd>X</kbd> <span data-i18n="hint.home">Domů</span></span>
     <span class="hint"><kbd>B</kbd> <span data-i18n="hint.back">Zpět</span></span>
 </div>
@@ -1497,6 +1676,15 @@
         <span class="nav-item-text">
           <span class="nav-item-label" data-i18n="nav.system">Systém</span>
           <span class="nav-item-desc">Aktualizace &amp; launcher</span>
+        </span>
+        <span class="material-symbols-outlined nav-item-arrow">chevron_right</span>
+      </button>
+
+      <button class="settings-nav-item" data-pane="history" type="button">
+        <span class="material-symbols-outlined nav-item-icon">history</span>
+        <span class="nav-item-text">
+          <span class="nav-item-label" data-i18n="nav.history">Historie</span>
+          <span class="nav-item-desc" data-i18n="nav.history.desc">Sledování a statistiky</span>
         </span>
         <span class="material-symbols-outlined nav-item-arrow">chevron_right</span>
       </button>
@@ -1616,6 +1804,41 @@
       </div>
     </div>
 
+    <!-- History pane -->
+    <div class="settings-pane" id="pane-history">
+      <div class="settings-pane-title" data-i18n="pane.history.title">Historie sledování</div>
+      <div class="settings-pane-sub" data-i18n="pane.history.sub">Přehled vašeho sledování a správa historie.</div>
+      <div class="settings-row">
+        <div class="settings-row-label" data-i18n="row.history.stats">Statistiky</div>
+        <div class="about-info-list">
+          <div class="about-info-row">
+            <span class="about-info-key" data-i18n="history.total.sessions">Celkem relací</span>
+            <span class="about-info-val" id="history-total-sessions">0</span>
+          </div>
+          <div class="about-info-row">
+            <span class="about-info-key" data-i18n="history.total.time">Celkový čas sledování</span>
+            <span class="about-info-val" id="history-total-time">0 min</span>
+          </div>
+          <div class="about-info-row">
+            <span class="about-info-key" data-i18n="history.most.watched">Nejsledovanější</span>
+            <span class="about-info-val" id="history-most-watched">–</span>
+          </div>
+        </div>
+      </div>
+      <div class="settings-row">
+        <div class="settings-row-label" data-i18n="row.history.manage">Správa</div>
+        <div class="settings-action-list">
+          <button class="settings-action-btn danger" type="button" id="clear-history-btn">
+            <span class="material-symbols-outlined action-icon">delete_sweep</span>
+            <span class="action-text">
+              <span class="action-label" data-i18n="action.clearHistory">Smazat historii</span>
+              <span class="action-desc" data-i18n="action.clearHistory.desc">Odstraní veškerou historii sledování.</span>
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- About pane -->
     <div class="settings-pane" id="pane-about">
       <div class="settings-pane-title" data-i18n="pane.about.title">O aplikaci</div>
@@ -1661,10 +1884,12 @@
   const RECENT_STORAGE_KEY = 'media-center-recent-apps';
   const FAVORITES_KEY      = 'media-center-favorites';
   const SOUND_KEY          = 'media-center-sound';
+  const HISTORY_KEY        = 'media-center-watch-history';
+  const SESSION_KEY        = 'media-center-active-session';
   const SCREENSAVER_DELAY  = 180000; // 3 minutes
   const IDLE_RETURN_DELAY  = 600000; // 10 minutes — auto-return to launcher tab
-  const TAB_FILTERS = ['all', 'streaming', 'music', 'other'];
-  const TAB_AMBIENTS = ['default', 'netflix', 'spotify', 'plex'];
+  const TAB_FILTERS = ['all', 'streaming', 'music', 'other', 'history'];
+  const TAB_AMBIENTS = ['default', 'netflix', 'spotify', 'plex', 'default'];
 
   const BRAND_GLOWS = {
     default: { primary: '80, 90, 110',   secondary: '124, 134, 156' },
@@ -1700,9 +1925,9 @@
   // ── Element refs ──────────────────────────────────
   const ambient          = document.getElementById('ambient');
   const navTabs          = Array.from(document.querySelectorAll('.nav-tab'));
-  const sections         = Array.from(document.querySelectorAll('[data-row]'));
-  const rows             = sections.map(s => Array.from(s.querySelectorAll('.tile')));
-  const allTiles         = rows.flat();
+  let sections           = Array.from(document.querySelectorAll('[data-row]'));
+  let rows               = sections.map(s => Array.from(s.querySelectorAll('.tile')));
+  let allTiles           = rows.flat();
   const searchInput      = document.getElementById('search-input');
   const searchForm       = document.getElementById('search-form');
   const launchToast      = document.getElementById('launch-toast');
@@ -1762,12 +1987,14 @@
   let gpLoop = null;
   let lastGpTime = 0;
   let batteryManager = null;
+  let watchHistory   = loadWatchHistory();
+  let activeSession  = loadActiveSession();
   const GP_REPEAT = 220;
 
   // ── Settings panel state ──
   let settingsNavFocus  = 0;       // which sidebar item is active
   let settingsPaneFocus = 'sidebar'; // 'sidebar' | 'content'
-  const PANES = ['language', 'network', 'system', 'about'];
+  const PANES = ['language', 'network', 'system', 'history', 'about'];
 
   // ── Clock ─────────────────────────────────────────
   function updateClock() {
@@ -1850,8 +2077,19 @@
 
   function applyTabFilter(opts = {}) {
     const filter = TAB_FILTERS[activeTabIdx];
+    const isHistory = filter === 'history';
+    const historyView = document.getElementById('history-view');
+    if (historyView) historyView.classList.toggle('active', isHistory);
+    if (isHistory) renderHistoryView();
     sections.forEach(s => {
-      s.classList.toggle('is-hidden', filter !== 'all' && s.dataset.section !== filter);
+      if (isHistory) {
+        s.classList.add('is-hidden');
+      } else if (s.dataset.section === 'continue') {
+        const hasContent = s.querySelectorAll('.tile').length > 0;
+        s.classList.toggle('is-hidden', filter !== 'all' || !hasContent);
+      } else {
+        s.classList.toggle('is-hidden', filter !== 'all' && s.dataset.section !== filter);
+      }
     });
     syncActivePosition();
     if (opts.focusTile) focusTile(activeRow, activeCol);
@@ -1920,6 +2158,247 @@
       b.addEventListener('click', () => {
         closeOverlay({ restoreFocus: false });
         launchApp(b.dataset.url, b.dataset.name, b.dataset.brand || 'default');
+      });
+    });
+  }
+
+  // ── Watch History ──────────────────────────────────
+  function loadWatchHistory() {
+    try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch { return []; }
+  }
+
+  function saveWatchHistory() { localStorage.setItem(HISTORY_KEY, JSON.stringify(watchHistory)); }
+
+  function loadActiveSession() {
+    try { return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); } catch { return null; }
+  }
+
+  function saveActiveSession() { localStorage.setItem(SESSION_KEY, JSON.stringify(activeSession)); }
+
+  function startWatchSession(url, name, brand) {
+    activeSession = { url, name, brand, startedAt: Date.now() };
+    saveActiveSession();
+  }
+
+  async function endWatchSession() {
+    if (!activeSession) return;
+    const duration = Math.round((Date.now() - activeSession.startedAt) / 1000);
+    if (duration >= 10) {
+      let title = activeSession.title || null;
+      try {
+        const res = await fetch('http://127.0.0.1:8765/watch-title', { signal: AbortSignal.timeout(500) });
+        if (res.ok) { const data = await res.json(); if (data.title) title = data.title; }
+      } catch {}
+      watchHistory.unshift({
+        url: activeSession.url,
+        name: activeSession.name,
+        brand: activeSession.brand,
+        title,
+        startedAt: activeSession.startedAt,
+        endedAt: Date.now(),
+        duration
+      });
+      if (watchHistory.length > 200) watchHistory = watchHistory.slice(0, 200);
+      saveWatchHistory();
+    }
+    activeSession = null;
+    localStorage.removeItem(SESSION_KEY);
+    renderContinueWatching();
+    updateHistorySettings();
+  }
+
+  function formatDuration(seconds) {
+    if (seconds < 60) return `${seconds}s`;
+    const m = Math.floor(seconds / 60);
+    if (m < 60) return `${m} min`;
+    const h = Math.floor(m / 60);
+    const rm = m % 60;
+    return rm > 0 ? `${h}h ${rm}m` : `${h}h`;
+  }
+
+  function formatTimeOfDay(ts) {
+    const d = new Date(ts);
+    return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  }
+
+  function getContinueWatchingItems() {
+    const seen = new Set();
+    const items = [];
+    const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    for (const entry of watchHistory) {
+      if (entry.startedAt < cutoff) break;
+      const key = entry.brand || entry.url;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      items.push(entry);
+      if (items.length >= 6) break;
+    }
+    return items;
+  }
+
+  function renderContinueWatching() {
+    const container = document.getElementById('continue-row');
+    const section = document.getElementById('continue-section');
+    if (!container || !section) return;
+    const items = getContinueWatchingItems();
+    if (!items.length) {
+      container.innerHTML = '';
+      section.classList.add('is-hidden');
+      rebuildGrid();
+      return;
+    }
+    container.innerHTML = items.map(item => {
+      const brand = escapeHtml(item.brand || 'default');
+      const name = escapeHtml(item.name);
+      const url = escapeHtml(item.url);
+      const dur = formatDuration(item.duration);
+      const ago = formatRelativeTime(item.startedAt);
+      const origTile = document.querySelector(`.tile[data-brand="${brand}"]:not(.continue-row .tile)`);
+      const logoSrc = origTile ? origTile.querySelector('.app-logo')?.src || '' : '';
+      const logoHtml = logoSrc ? `<img src="${escapeHtml(logoSrc)}" alt="${name}" class="app-logo">` : '';
+      const titleHtml = item.title ? `<span class="app-label" style="opacity:1;font-size:0.72rem">${escapeHtml(item.title)}</span>` : `<span class="app-label">${name}</span>`;
+      return `<a class="tile" href="${url}" data-brand="${brand}" data-name="${name}" tabindex="-1">
+        ${logoHtml}
+        ${titleHtml}
+        <div class="watch-meta">
+          <span class="watch-meta-duration"><span class="material-symbols-outlined">schedule</span>${dur}</span>
+          <span class="watch-meta-ago">${ago}</span>
+        </div>
+      </a>`;
+    }).join('');
+    if (TAB_FILTERS[activeTabIdx] === 'all') {
+      section.classList.remove('is-hidden');
+    }
+    rebuildGrid();
+  }
+
+  function getWatchStats() {
+    const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+    const todayEntries = watchHistory.filter(e => e.startedAt >= todayStart.getTime());
+    const totalToday = todayEntries.reduce((s, e) => s + (e.duration || 0), 0);
+    const totalAll = watchHistory.reduce((s, e) => s + (e.duration || 0), 0);
+    const counts = {};
+    watchHistory.forEach(e => { counts[e.name] = (counts[e.name] || 0) + (e.duration || 0); });
+    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+    return {
+      sessionsToday: todayEntries.length,
+      timeToday: totalToday,
+      totalSessions: watchHistory.length,
+      totalTime: totalAll,
+      mostWatched: sorted[0] ? sorted[0][0] : null,
+      mostWatchedTime: sorted[0] ? sorted[0][1] : 0
+    };
+  }
+
+  function renderHistoryView() {
+    const statsEl = document.getElementById('history-stats');
+    const timelineEl = document.getElementById('history-timeline');
+    if (!statsEl || !timelineEl) return;
+    const stats = getWatchStats();
+    const strings = LANGUAGES[activeLanguage]?.strings || LANGUAGES.cs.strings;
+
+    statsEl.innerHTML = `
+      <div class="history-stat-card">
+        <span class="material-symbols-outlined history-stat-icon">today</span>
+        <div class="history-stat-value">${stats.sessionsToday}</div>
+        <div class="history-stat-label">${strings['history.stat.today'] || 'Dnes relací'}</div>
+      </div>
+      <div class="history-stat-card">
+        <span class="material-symbols-outlined history-stat-icon">schedule</span>
+        <div class="history-stat-value">${formatDuration(stats.timeToday)}</div>
+        <div class="history-stat-label">${strings['history.stat.timeToday'] || 'Čas dnes'}</div>
+      </div>
+      <div class="history-stat-card">
+        <span class="material-symbols-outlined history-stat-icon">trophy</span>
+        <div class="history-stat-value">${stats.mostWatched || '–'}</div>
+        <div class="history-stat-label">${strings['history.stat.mostWatched'] || 'Nejsledovanější'}</div>
+      </div>
+      <div class="history-stat-card">
+        <span class="material-symbols-outlined history-stat-icon">bar_chart</span>
+        <div class="history-stat-value">${formatDuration(stats.totalTime)}</div>
+        <div class="history-stat-label">${strings['history.stat.totalTime'] || 'Celkový čas'}</div>
+      </div>`;
+
+    if (!watchHistory.length) {
+      timelineEl.innerHTML = `<div class="history-empty">
+        <span class="material-symbols-outlined history-empty-icon">history</span>
+        <div class="history-empty-text">${strings['history.empty'] || 'Zatím žádná historie sledování.'}</div>
+      </div>`;
+      return;
+    }
+
+    const days = {};
+    watchHistory.forEach(entry => {
+      const d = new Date(entry.startedAt);
+      const key = d.toDateString();
+      if (!days[key]) days[key] = { date: d, entries: [] };
+      days[key].entries.push(entry);
+    });
+
+    timelineEl.innerHTML = Object.values(days).map(group => {
+      const dayStr = group.date.toLocaleDateString(activeLanguage === 'en' ? 'en-GB' : 'cs-CZ',
+        { weekday: 'long', day: 'numeric', month: 'long' });
+      const dayTotal = group.entries.reduce((s, e) => s + (e.duration || 0), 0);
+      const items = group.entries.map(entry => `
+        <div class="history-item">
+          <span class="history-swatch" style="--swatch-color:var(--color-${escapeHtml(entry.brand || 'default')})"></span>
+          <div class="history-item-info">
+            <div class="history-item-name">${escapeHtml(entry.name)}</div>
+            ${entry.title ? `<div class="history-item-title">${escapeHtml(entry.title)}</div>` : ''}
+          </div>
+          <span class="history-item-duration">${formatDuration(entry.duration)}</span>
+          <span class="history-item-time">${formatTimeOfDay(entry.startedAt)}</span>
+        </div>`).join('');
+      return `<div class="history-day-group">
+        <div class="history-day-label">
+          <span>${dayStr}</span>
+          <span class="history-day-total">${formatDuration(dayTotal)}</span>
+        </div>
+        <div class="history-items">${items}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function updateHistorySettings() {
+    const stats = getWatchStats();
+    const el = (id) => document.getElementById(id);
+    const totalSessions = el('history-total-sessions');
+    const totalTime = el('history-total-time');
+    const mostWatched = el('history-most-watched');
+    if (totalSessions) totalSessions.textContent = stats.totalSessions;
+    if (totalTime) totalTime.textContent = formatDuration(stats.totalTime);
+    if (mostWatched) mostWatched.textContent = stats.mostWatched || '–';
+  }
+
+  function clearWatchHistory() {
+    watchHistory = [];
+    saveWatchHistory();
+    activeSession = null;
+    localStorage.removeItem(SESSION_KEY);
+    renderContinueWatching();
+    renderHistoryView();
+    updateHistorySettings();
+  }
+
+  function rebuildGrid() {
+    sections = Array.from(document.querySelectorAll('[data-row]'));
+    rows = sections.map(s => Array.from(s.querySelectorAll('.tile')));
+    const prevTiles = new Set(allTiles);
+    allTiles = rows.flat();
+    allTiles.forEach(tile => {
+      if (prevTiles.has(tile)) return;
+      tile.addEventListener('focus', () => {
+        rows.forEach((rt, ri) => {
+          const ci = rt.indexOf(tile);
+          if (ci !== -1) { activeRow = ri; activeCol = ci; }
+        });
+        searchFocused = false; tabFocused = false;
+        searchForm.classList.remove('tv-focus');
+        setAmbient(tile.dataset.brand || 'default');
+      });
+      tile.addEventListener('click', event => {
+        event.preventDefault();
+        launchApp(tile.href, tile.dataset.name || '', tile.dataset.brand || 'default');
       });
     });
   }
@@ -2011,6 +2490,8 @@
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => launchToast.classList.remove('visible'), 2200);
     rememberRecentApp({ url, name, brand, timestamp: Date.now() });
+    endWatchSession();
+    startWatchSession(url, name, brand);
     window.open(url, '_blank', 'noopener');
   }
 
@@ -2249,7 +2730,18 @@
         'action.sound': 'Zvuky navigace', 'action.sound.desc': 'Jemné zvuky při pohybu a výběru.',
         'row.sound': 'Zvuky', 'sound.on': 'Zapnuto', 'sound.off': 'Vypnuto',
         'ctx.open': 'Otevřít', 'ctx.search': 'Hledat', 
-        'hero.open': 'Otevřít', 'screensaver.hint': 'Stiskni cokoliv pro návrat'
+        'hero.open': 'Otevřít', 'screensaver.hint': 'Stiskni cokoliv pro návrat',
+        'tab.history': 'Historie', 'section.continue': 'Pokračovat ve sledování',
+        'hint.history': 'Historie',
+        'nav.history': 'Historie', 'nav.history.desc': 'Sledování a statistiky',
+        'pane.history.title': 'Historie sledování', 'pane.history.sub': 'Přehled vašeho sledování a správa historie.',
+        'row.history.stats': 'Statistiky', 'row.history.manage': 'Správa',
+        'history.total.sessions': 'Celkem relací', 'history.total.time': 'Celkový čas sledování',
+        'history.most.watched': 'Nejsledovanější',
+        'action.clearHistory': 'Smazat historii', 'action.clearHistory.desc': 'Odstraní veškerou historii sledování.',
+        'history.stat.today': 'Dnes relací', 'history.stat.timeToday': 'Čas dnes',
+        'history.stat.mostWatched': 'Nejsledovanější', 'history.stat.totalTime': 'Celkový čas',
+        'history.empty': 'Zatím žádná historie sledování.'
       }
     },
     en: {
@@ -2276,7 +2768,18 @@
         'action.sound': 'Navigation sounds', 'action.sound.desc': 'Subtle sounds on focus and selection.',
         'row.sound': 'Sounds', 'sound.on': 'On', 'sound.off': 'Off',
         'ctx.open': 'Open', 'ctx.search': 'Search', 'ctx.fav': 'Add to favorites', 'ctx.unfav': 'Remove from favorites',
-        'hero.open': 'Open', 'screensaver.hint': 'Press anything to return'
+        'hero.open': 'Open', 'screensaver.hint': 'Press anything to return',
+        'tab.history': 'History', 'section.continue': 'Continue Watching',
+        'hint.history': 'History',
+        'nav.history': 'History', 'nav.history.desc': 'Watch history & stats',
+        'pane.history.title': 'Watch History', 'pane.history.sub': 'Overview of your watching activity and history management.',
+        'row.history.stats': 'Statistics', 'row.history.manage': 'Management',
+        'history.total.sessions': 'Total sessions', 'history.total.time': 'Total watch time',
+        'history.most.watched': 'Most watched',
+        'action.clearHistory': 'Clear history', 'action.clearHistory.desc': 'Removes all watch history data.',
+        'history.stat.today': 'Sessions today', 'history.stat.timeToday': 'Time today',
+        'history.stat.mostWatched': 'Most watched', 'history.stat.totalTime': 'Total time',
+        'history.empty': 'No watch history yet.'
       }
     }
   };
@@ -2480,6 +2983,9 @@
     if (!typing && (event.key.toLowerCase() === 'y' || (event.altKey && event.key.toLowerCase() === 'r'))) {
       event.preventDefault(); toggleRecentOverlay(); return;
     }
+    if (!typing && event.key.toLowerCase() === 'h') {
+      event.preventDefault(); setActiveTab(TAB_FILTERS.indexOf('history')); focusTab(activeTabIdx); return;
+    }
 
     if (inTab) {
       if (event.key === 'ArrowRight') { event.preventDefault(); focusTab(activeTabIdx + 1); }
@@ -2656,6 +3162,14 @@
   // ── Init ──────────────────────────────────────────
   window.addEventListener('online',  updateNetworkStatus);
   window.addEventListener('offline', updateNetworkStatus);
+
+  // End watch session when user returns to launcher
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && activeSession) endWatchSession();
+  });
+  window.addEventListener('focus', () => {
+    if (activeSession) endWatchSession();
+  });
   window.addEventListener('gamepadconnected',    () => { if (!gpLoop) gpLoop = setInterval(handleGamepad, 50); });
   window.addEventListener('gamepaddisconnected', () => { clearInterval(gpLoop); gpLoop = null; });
 
@@ -2669,6 +3183,8 @@
 
   // Sound toggle
   document.getElementById('settings-sound-toggle')?.addEventListener('click', toggleSound);
+  // Clear history
+  document.getElementById('clear-history-btn')?.addEventListener('click', clearWatchHistory);
 
   activeLanguage = getSavedLanguage();
   document.documentElement.lang = activeLanguage;
@@ -2681,6 +3197,8 @@
   updateUpdatesStatus();
   initBatteryStatus();
   renderRecentList();
+  renderContinueWatching();
+  updateHistorySettings();
   setActiveTab(0);
   setAmbient('default');
   updateSoundUI();

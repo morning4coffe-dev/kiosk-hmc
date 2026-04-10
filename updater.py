@@ -8,6 +8,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 PORT = 8765
 
+# Latest watch title reported by the browser extension
+_latest_watch_title = {'title': None, 'brand': None, 'name': None, 'url': None, 'timestamp': 0}
+
 class UpdaterHandler(BaseHTTPRequestHandler):
     def _set_headers(self, status=200):
         self.send_response(status)
@@ -24,6 +27,9 @@ class UpdaterHandler(BaseHTTPRequestHandler):
         if self.path == '/status':
             self._set_headers()
             self.wfile.write(json.dumps({'success': True, 'message': 'Updater is alive'}).encode())
+        elif self.path == '/watch-title':
+            self._set_headers()
+            self.wfile.write(json.dumps(_latest_watch_title).encode())
         else:
             self._set_headers(404)
             self.wfile.write(json.dumps({'success': False, 'error': 'Not found'}).encode())
@@ -31,9 +37,29 @@ class UpdaterHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         if self.path == '/update':
             self.handle_update()
+        elif self.path == '/watch-title':
+            self.handle_watch_title()
         else:
             self._set_headers(404)
             self.wfile.write(json.dumps({'success': False, 'error': 'Not found'}).encode())
+
+    def handle_watch_title(self):
+        global _latest_watch_title
+        try:
+            length = int(self.headers.get('Content-Length', 0))
+            body = json.loads(self.rfile.read(length)) if length else {}
+            _latest_watch_title = {
+                'title': body.get('title'),
+                'brand': body.get('brand'),
+                'name': body.get('name'),
+                'url': body.get('url'),
+                'timestamp': body.get('timestamp', 0),
+            }
+            self._set_headers()
+            self.wfile.write(json.dumps({'success': True}).encode())
+        except Exception as exc:
+            self._set_headers(400)
+            self.wfile.write(json.dumps({'success': False, 'error': str(exc)}).encode())
 
     def handle_update(self):
         result = {'success': False, 'message': ''}
